@@ -1,0 +1,31 @@
+/* staff.css: касса. Крупные цели нажатия (≥44px), тёмная/светлая тема через переменные base.css */
+.pos-top{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}.pos-top input{min-width:180px}.pos-top input{flex:1}.pos-top .btn{white-space:nowrap}
+.pos-pt{margin:6px 0 12px;color:var(--mu);display:flex;gap:10px;align-items:center}.pos-pt select{width:auto}
+.h3{font-size:18px;margin:16px 0 8px}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.chips .btn{padding:12px 16px;font-size:14px}
+.row{display:flex;width:100%;gap:12px;align-items:center;justify-content:space-between;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:8px;min-height:56px}
+.row small{display:block;color:var(--mu)}.row i{color:var(--mu);font-style:normal;font-size:13px}
+.cl{display:grid;grid-template-columns:1fr auto auto auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.cl .cn small,.cl small{color:var(--mu)}.cl .cp{width:90px;padding:8px}.qt{display:inline-flex;align-items:center;gap:8px}
+.qt button,.cl .x{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);font-size:20px}.qt button:disabled{opacity:.35}
+.tt{margin-top:14px}.tt>div{display:flex;justify-content:space-between;padding:4px 0}.tt .big{font-size:22px;border-top:1px solid var(--line);padding-top:10px}
+.pay{display:flex;gap:10px;flex-wrap:wrap}.pay .btn,.pay input{flex:1;min-height:48px;justify-content:center}.bigb{width:100%;justify-content:center;margin-top:18px;min-height:56px;font-size:18px}.bigb:disabled{opacity:.4}
+.scn,.stm{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.8);display:grid;place-items:center;padding:12px;overflow:auto}
+.scn-b{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;width:100%;max-width:460px}.scn-b #scn-v{border-radius:14px;overflow:hidden;min-height:200px;background:#000}
+.scn-a{display:flex;gap:10px;margin-top:10px}.scn-a input{flex:1}.scn-a .btn{flex:1;justify-content:center}
+.stm .panel{max-width:420px;width:100%}.stm pre{white-space:pre-wrap;font:14px/1.5 ui-monospace,Menlo,monospace;margin:12px 0}
+@media print{body>*:not(.rcp){display:none!important}.rcp{position:static;background:none}.rcp .pay{display:none}.rcp .panel{border:0;color:#000}}
+
+/* A1: окно подбора масла */
+.stm .panel.ps{max-width:560px}.ps-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.ps-h .btn{min-height:44px}
+.ps .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:480px){.ps .fr2{grid-template-columns:1fr}}
+.ps-c{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px;display:grid;gap:8px}.ps-c.ex{border-color:var(--gold)}
+.ps-n{display:flex;justify-content:space-between;gap:8px;align-items:center}.ps-f{display:flex;justify-content:space-between;align-items:center;gap:10px}.ps-f small{display:block;color:var(--mu)}.ps-f .btn{min-height:48px}
+.ps .exb{font-size:13px;color:var(--mu)}.ps-c.ex .exb{color:var(--gold)}
+.ps .ch{display:inline-block;font-size:12px;border:1px solid var(--line);padding:3px 10px;border-radius:99px;margin:0 6px 6px 0;color:var(--mu)}.ps .ch.hl{border-color:var(--gold);color:var(--gold)}
+.ps .note{font-size:13px;color:var(--mu);margin-top:14px;border-left:2px solid var(--gold);padding-left:12px}
+
+/* v2.21-E5: сопутствующие товары под корзиной */
+.rel{border:1px dashed var(--gold);border-radius:14px;padding:10px 12px;margin:12px 0;display:grid;gap:8px}.rel>b{font-size:13px;color:var(--gold)}
+.rel-r{display:flex;align-items:center;gap:10px}.rel-r .cn{flex:1;min-width:0}.rel-r small{color:var(--mu)}.rel-r .btn{min-height:44px;padding:8px 16px}.rel-r .x{min-width:44px;min-height:44px}
+/* v2.21-E7: инвентаризация в кассе (те же классы, что в админке) */
+.sa-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.sa-h h1{font-size:30px}.sa small{color:var(--mu)}.tb tr.blk td{opacity:.55}

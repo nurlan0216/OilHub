@@ -1,0 +1,36 @@
+{
+  "id": "./staff.html",
+  "name": "OilHub Қызметкер",
+  "short_name": "Қызметкер",
+  "description": "OilHub қызметкер кассасы",
+  "lang": "kk",
+  "dir": "ltr",
+  "start_url": "./staff.html",
+  "scope": "./staff.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0f11",
+  "theme_color": "#0e0f11",
+  "icons": [
+    {
+      "src": "assets/icons/staff-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/staff-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/staff-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "shopping"
+  ]
+}

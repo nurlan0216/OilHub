@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /OilHub/admin.html
+Disallow: /OilHub/staff.html
+Sitemap: https://nurlan0216.github.io/OilHub/sitemap.xml

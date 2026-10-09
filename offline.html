@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>OilHub · Желі жоқ / Нет сети</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0b0b;color:#f2f2f2;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:center;padding:24px}
+  .box{max-width:420px}
+  h1{font-size:26px;margin:0 0 12px;color:#d4a843}
+  p{margin:6px 0;line-height:1.5;color:#cfcfcf}
+  button{margin-top:22px;padding:14px 28px;border:0;border-radius:12px;background:#d4a843;color:#111;font-size:17px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="box">
+  <div data-l="kk"><h1>Желіге қосылым жоқ</h1>
+  <p>Интернетті тексеріп, қайталап көріңіз.</p>
+  <button onclick="location.reload()">Қайталау</button></div>
+  <div data-l="ru"><h1>Нет подключения к сети</h1>
+  <p>Проверьте интернет и повторите попытку.</p>
+  <button onclick="location.reload()">Повторить</button></div>
+  <script>
+  (function(){var l='kk';try{l=localStorage.getItem('lang')==='ru'?'ru':'kk'}catch(e){}
+  document.documentElement.lang=l;document.title='OilHub · '+(l==='ru'?'Нет сети':'Желі жоқ');
+  var d=document.querySelectorAll('[data-l]');for(var i=0;i<d.length;i++)if(d[i].getAttribute('data-l')!==l)d[i].style.display='none'})();
+  </script>
+</div>
+</body>
+</html>

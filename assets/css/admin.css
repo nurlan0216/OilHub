@@ -1,0 +1,147 @@
+/* admin.css: стили панели администратора (перенесены из старой админки) */
+.ad{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:start}.sbx{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;position:sticky;top:90px}
+.sbx button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:500}.sbx button:hover{background:var(--bg2)}.sbx button.on{background:var(--gold);color:#16181b;font-weight:700}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px}.kp div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.kp b{display:block;font:italic 800 32px 'Exo 2',Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif;color:var(--gold)}.kp span{font-size:13px;color:var(--mu)}
+.ab{display:flex;gap:6px}.ab button{border:1px solid var(--line);background:var(--bg2);border-radius:8px;padding:5px 10px;font-size:13px}.ab button:hover{border-color:var(--gold)}.ab .dl:hover{border-color:#d9534f;color:#d9534f}
+.mod{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);display:grid;place-items:center;padding:16px;overflow:auto;animation:fi .25s}.mod>form{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px;width:100%;max-width:640px;max-height:92vh;overflow:auto}
+@keyframes fi{from{opacity:0}}
+.th{width:44px;height:44px;object-fit:cover;border-radius:8px}
+.st-new{color:#4da3ff}.st-confirmed{color:#e0b25a}.st-work{color:#c77dff}.st-done{color:#4cc38a}.st-cancel{color:#d9534f}
+@media(max-width:900px){.ad{grid-template-columns:1fr}.sbx{position:static;display:flex;overflow-x:auto}.sbx button{white-space:nowrap;width:auto}}
+
+/* сотрудники и матрица прав */
+.sa-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.sa-h h1{font-size:34px}
+.sa h2{font-size:26px;margin:28px 0 6px}.sa .ab button{min-height:36px}
+.pm th.v{height:150px;vertical-align:bottom;padding:6px 4px;font-weight:500}.pm th.v span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-size:12px;display:inline-block}
+.pm td.c{text-align:center}.pm input[type=checkbox]{width:24px;height:24px;accent-color:var(--gold);cursor:pointer}
+.pm td:first-child,.pm th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:140px}
+.pm tr.blk td{opacity:.55}.pm small,.sa small{color:var(--mu)}
+
+/* каталог (этап B1): заголовок раздела, форма, двуязычные поля kk → ru, индикатор полноты перевода */
+.cg-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.cg-h h1{font-size:34px}.cg-b{display:flex;gap:10px;flex-wrap:wrap}
+.mod>form.wide{max-width:780px}.mod textarea{resize:vertical}
+.bi{border:1px solid var(--line);border-radius:14px;padding:2px 14px 14px;margin-top:16px;min-width:0}.bi legend{font-size:13px;color:var(--mu);padding:0 6px}.bi legend small{color:var(--mu)}
+.bi-r label{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bi-cp{padding:6px 12px;font-size:13px;margin-top:8px}
+.bi-s{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.bi-s .bi-cp{margin-top:0}
+.tr{display:inline-block;font-size:12px;font-weight:700;line-height:1.5;padding:0 9px;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+.tr.ok{color:#4cc38a;border-color:#4cc38a}.tr.warn{color:var(--gold);border-color:var(--gold)}.tr.none{color:#d9534f;border-color:#d9534f}
+@media(max-width:560px){.mod .fr2{grid-template-columns:1fr}.cg-h h1{font-size:28px}}
+
+/* этап B2: записи (статус в таблице, ссылка WhatsApp) */
+.ab a{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--bg2);border-radius:8px;padding:5px 10px;font-size:13px}.ab a:hover{border-color:var(--gold)}
+.tb select.stl{width:auto;min-width:130px;padding:6px 10px;font-size:13px;font-weight:700}
+
+/* этап F: дашборд. Без тегов section (в base.css у них отступ 96px). На телефоне всё в одну колонку, суммы не обрезаются */
+.ds .sa-h{margin-bottom:12px}.ds .sub{margin-bottom:0}.ds .sa-h .sub{font-size:13px}
+.ds-rv{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:12px}
+.ds-sc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px}
+.ds-c{display:block;width:100%;min-width:0;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;transition:border-color .2s}
+.ds-c:hover,.ds-c:focus-visible{border-color:var(--gold)}
+.ds-c span{display:block;font-size:13px;color:var(--mu)}
+.ds-c b{display:block;margin:4px 0 2px;font:italic 800 clamp(24px,7vw,32px)/1.15 'Exo 2',Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif;color:var(--gold);overflow-wrap:anywhere}
+.ds-c small{display:block;font-size:12px;color:var(--mu)}.ds-c.warn b,.ds-v{color:#d9534f}
+.ds-seg{margin:16px 0 12px;gap:8px}.ds-seg .btn{flex:1;justify-content:center;min-height:44px;padding:10px 14px}
+.ds-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:start}
+.ds-p{padding:18px;border-radius:20px;min-width:0}.ds-p h2{font-size:20px;margin:0 0 12px}.ds-p .sub{margin:0 0 12px}.ds-p .btn{min-height:44px;margin-top:4px}
+.ds-l,.ds-s{list-style:none;padding:0}.ds-l li{padding:8px 0;border-bottom:1px solid var(--line)}.ds-l li:last-child{border:0}
+.ds-n{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.ds-n span{min-width:0;overflow-wrap:anywhere}.ds-n b{white-space:nowrap}
+.ds-m{height:6px;border-radius:99px;background:var(--bg2);margin:6px 0 3px;overflow:hidden}.ds-m i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.ds-l small,.ds-s small{font-size:12px;color:var(--mu)}
+.ds-s li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}.ds-s li span{min-width:0;overflow-wrap:anywhere}.ds-s b{min-width:34px;text-align:center;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:0 10px}.ds-s b.z{border-color:#d9534f;color:#d9534f}
+@media(max-width:560px){.ds .sa-h h1{font-size:28px}.ds-g{grid-template-columns:1fr}}
+
+/* этап G2.1: раздел «Автомобили». Цвет всегда сопровождается значком и подписью: дубль (синий ⧉), пустые допуски (золотой ∅), ошибка лет (красный ⚠) */
+#cp{--cp-dup:#4a9fe0;--cp-spec:var(--gold);--cp-yr:#d9534f}
+:root[data-theme=light] #cp{--cp-dup:#1f6fb5;--cp-spec:#9a6a10;--cp-yr:#b8322e}
+.cp-cn{margin-bottom:12px}
+.cp-c{cursor:pointer;min-height:44px}.cp-c i{font-style:normal}
+.cp-c.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(224,178,90,.25)}
+.cp-c.cp-dup{border-left:4px solid var(--cp-dup)}.cp-c.cp-spec{border-left:4px solid var(--cp-spec)}.cp-c.cp-yr{border-left:4px solid var(--cp-yr)}
+.cp-lg{list-style:none;display:flex;flex-wrap:wrap;gap:6px 18px;padding:0;margin:6px 0 12px;font-size:13px;color:var(--mu);align-items:center}
+.cp-lt{font-weight:700;color:var(--tx)}
+.cp-b{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;line-height:1.5;padding:0 9px;border-radius:99px;border:1px solid currentColor;white-space:nowrap;margin:0 4px 2px 0}.cp-b i{font-style:normal}
+.cp-b.cp-dup{color:var(--cp-dup)}.cp-b.cp-spec{color:var(--cp-spec)}.cp-b.cp-yr{color:var(--cp-yr)}.cp-b.cp-oth{color:var(--mu);white-space:normal}
+.cp-f{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;margin:0 0 8px;align-items:center}.cp-f input,.cp-f select{min-width:0;width:100%}.cp-f .btn{min-height:44px;justify-content:center}
+.cp-sh{margin:6px 0 10px;font-size:13px}
+.cp-tb tr.cp-r-dup td:first-child{box-shadow:inset 4px 0 var(--cp-dup)}
+.cp-tb tr.cp-r-spec td:first-child{box-shadow:inset 4px 0 var(--cp-spec)}
+.cp-tb tr.cp-r-yr td:first-child{box-shadow:inset 4px 0 var(--cp-yr)}
+.cp-tb tr.cp-r-dup{background:color-mix(in srgb,var(--cp-dup) 9%,transparent)}
+.cp-tb tr.cp-r-spec{background:color-mix(in srgb,var(--cp-spec) 9%,transparent)}
+.cp-tb tr.cp-r-yr{background:color-mix(in srgb,var(--cp-yr) 9%,transparent)}
+.cp-tb td{overflow-wrap:break-word}.cp-tb td:nth-child(-n+3),.cp-tb td:nth-child(5),.cp-tb td:nth-child(7){white-space:nowrap}.cp-tb td:nth-child(6){min-width:150px}.cp-tb td:nth-child(8){min-width:90px}.cp-tb td.cp-ac{white-space:nowrap}.cp-tb .ab{flex-wrap:nowrap}.cp-tb .ab button:disabled{opacity:.4;cursor:default}
+.cp-mo{display:flex;justify-content:center;margin:14px 0}.cp-mo .btn{min-height:44px}
+.cp-ne{border-color:#d9534f;color:var(--tx)}.cp-nw{border-color:var(--gold)}
+#cp .note{margin:8px 0}
+@media(max-width:900px){.cp-f{grid-template-columns:1fr 1fr}.cp-f input[type=search],.cp-f .btn{grid-column:1/-1}}
+@media(max-width:560px){
+ .cp-f{grid-template-columns:1fr}
+ .cp-cn{grid-template-columns:1fr 1fr}.cp-c{padding:10px 12px}
+ .cp-t{padding:6px!important;overflow-x:hidden}
+ .cp-tb,.cp-tb tbody,.cp-tb tr,.cp-tb td{display:block;width:100%}
+ .cp-tb tr:first-child{display:none}
+ .cp-tb tr{border:1px solid var(--line);border-radius:14px;margin:0 0 10px;padding:6px 10px}
+ .cp-tb td{border:0;padding:4px 0;display:grid;grid-template-columns:104px 1fr;gap:8px}.cp-tb td:nth-child(n){white-space:normal;min-width:0}
+ .cp-tb td[data-l]::before{content:attr(data-l);color:var(--mu);font-size:12px}
+ .cp-tb td:empty{display:none}
+ .cp-tb td.cp-ac{display:block;padding-top:8px}.cp-tb td.cp-ac .ab{justify-content:flex-end}.cp-tb .ab button{min-height:40px;min-width:40px}
+ .cp-tb tr.cp-em td{display:block}
+ .cp-tb tr.cp-r-dup td:first-child,.cp-tb tr.cp-r-spec td:first-child,.cp-tb tr.cp-r-yr td:first-child{box-shadow:none}
+ .cp-tb tr.cp-r-dup{border-left:4px solid var(--cp-dup)}.cp-tb tr.cp-r-spec{border-left:4px solid var(--cp-spec)}.cp-tb tr.cp-r-yr{border-left:4px solid var(--cp-yr)}
+ .cp-lg li:not(.cp-lt){flex:1 1 100%}}
+
+/* этап G2.2a: импорт CSV (окно, отчёт). Отчёт на телефоне — карточки, страница не прокручивается вбок */
+.ci .ci-h{margin:0 0 12px;max-width:none;font-size:14px}.ci .ci-h a{color:var(--gold);text-decoration:underline;white-space:nowrap}
+.ci-o{margin-top:6px}.ci-o small{display:block;margin-top:6px;color:var(--mu)}
+.ci-st{margin:10px 0 0;font-size:13px;overflow-wrap:anywhere}
+.ci-sum{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;padding:0;margin:12px 0}
+.ci-c{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg2);min-width:0}.ci-c b{display:block;font-size:20px}.ci-c span{font-size:12px;color:var(--mu)}
+.ci-c.ok b{color:#4cc38a}.ci-c.dup b{color:var(--cp-dup,#4a9fe0)}.ci-c.er b{color:#d9534f}.ci-c.spec b{color:var(--gold)}
+.ci-fb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.ci-fb select{width:auto;min-width:160px}.ci-fb small{color:var(--mu);flex:1 1 220px}
+.ci-t{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:12px}.ci-tb td{overflow-wrap:anywhere}
+.ci-e,.ci-w{display:block}.ci-e{color:#d9534f}.ci-w{color:var(--gold)}
+.ci-tb tr.ci-r-error td:first-child{box-shadow:inset 4px 0 #d9534f}.ci-tb tr.ci-r-dup td:first-child{box-shadow:inset 4px 0 var(--cp-dup,#4a9fe0)}
+@media(max-width:560px){
+ .ci-sum{grid-template-columns:1fr 1fr}.ci-fb select{width:100%}.ci-t{max-height:none;overflow:visible;border:0}
+ .ci-tb,.ci-tb tbody,.ci-tb tr,.ci-tb td{display:block;width:100%}.ci-tb tr:first-child{display:none}
+ .ci-tb tr{border:1px solid var(--line);border-radius:12px;margin:0 0 8px;padding:6px 10px}
+ .ci-tb td{border:0;padding:3px 0;display:grid;grid-template-columns:96px 1fr;gap:8px}.ci-tb td[data-l]::before{content:attr(data-l);color:var(--mu);font-size:12px}
+ .ci-tb tr.ci-r-error td:first-child,.ci-tb tr.ci-r-dup td:first-child{box-shadow:none}.ci-tb tr.ci-r-error{border-left:4px solid #d9534f}.ci-tb tr.ci-r-dup{border-left:4px solid var(--cp-dup,#4a9fe0)}
+ .ci .btn{min-height:44px}}
+
+/* этап G2.2b: массовая правка в разделе «Автомобили» */
+.cp-sb{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:4px 0 10px}.cp-sb .ck{margin:0}.cp-sb .btn{min-height:44px}.cp-sn{font-size:14px}
+.cp-sl{display:flex;gap:10px;align-items:center;cursor:pointer;margin:0}.cp-sl input{width:22px;height:22px;flex:none;accent-color:var(--gold);cursor:pointer}
+.cp-tb tr.cp-sel{outline:2px solid var(--gold);outline-offset:-2px}
+.cb [hidden]{display:none!important}.cb .cb-h{margin:0 0 12px;max-width:none;font-size:14px}
+.cb-f{margin-top:14px}.cb-f small{display:block;margin-top:6px;color:var(--mu)}.cb-f .ck{margin-top:0;margin-bottom:6px}.cb-f select,.cb-f input:not([type=checkbox]),.cb-f textarea{width:100%}
+.cb-st{margin:10px 0 0;font-size:13px;overflow-wrap:anywhere}
+.cb-ph{margin:14px 0 8px;font-size:15px}
+.cb-bl{margin:0 0 10px;padding-left:18px;font-size:13px;overflow-wrap:anywhere}
+.cb-pv{list-style:none;margin:0;padding:0;max-height:40vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.cb-pv li{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;overflow-wrap:anywhere}.cb-pv li:last-child{border-bottom:0}
+.cb-ch{display:block;margin-top:3px;color:var(--mu)}.cb-ch em{font-style:normal;color:var(--tx)}.cb-ch b{color:var(--gold)}
+@media(max-width:560px){.cp-sb{flex-direction:column;align-items:stretch}.cp-sb .btn{width:100%}.cb-pv{max-height:none;overflow:visible}.cb .btn{min-height:44px}.cp-sl{width:100%}}
+
+/* v2.21-E5: выбор сопутствующих товаров в форме товара */
+.rl-box{max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0 4px;background:var(--bg2)}
+.rl-r{display:flex;align-items:center;gap:10px;margin:0;padding:10px 12px;font-size:14px;color:var(--tx);border-bottom:1px solid var(--line);cursor:pointer}.rl-r:last-child{border-bottom:0}
+.rl-r input{width:auto;flex:none}.rl-r small{color:var(--mu)}
+/* v2.21-E8: QR-коды для печати */
+.qr-row{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}
+.qr-f{margin:0;background:#fff;color:#000;border-radius:12px;padding:12px;text-align:center;max-width:260px}
+.qr-f figcaption{font-weight:700;font-size:18px;margin-bottom:4px}
+.qr-f svg{width:100%;height:auto;display:block}
+.qr-f small{display:block;word-break:break-all;font-size:11px;color:#333}
+.qr-s{margin:6px 0 0;font-size:14px}
+#qr-print-area{display:none}
+@media print{
+ body.qr-printing>*:not(#qr-print-area){display:none!important}
+ body.qr-printing>#qr-print-area{display:flex!important;flex-wrap:wrap;justify-content:center;gap:24mm;padding:15mm}
+ body.qr-printing{background:#fff!important;margin:0!important;min-height:0!important;height:auto!important;overflow:visible!important}
+ body.qr-printing .qr-f{max-width:80mm;border:1px solid #000;break-inside:avoid;padding:6mm}
+ body.qr-printing .qr-f figcaption{font-size:20pt}
+ body.qr-printing .qr-f small{font-size:9pt}
+ body.qr-printing .qr-s{font-size:12pt}
+}
