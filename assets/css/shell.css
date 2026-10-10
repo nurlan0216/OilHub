@@ -13,3 +13,23 @@
 .rm-p{display:inline-block;font-weight:700;font-size:13px;letter-spacing:.04em;border:1px solid var(--line);border-radius:8px;padding:0 8px;margin-left:6px}
 .rm-w{min-width:150px;justify-content:center}.rm-set{margin:0 0 16px;padding:16px 20px}.rm-set summary{cursor:pointer;font-weight:700}
 .rm-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;margin-top:12px}.rm-f label{display:grid;gap:6px;font-size:13px}
+
+/* v2.22-S2: шторка меню на телефоне и планшете (до 900px). На компьютере меню как раньше, лишние элементы скрыты */
+.sh-bg,.sh-dh,.sh-df,.sh-bk{display:none}
+body.sh-lock{overflow:hidden}
+@media(max-width:900px){
+ .sh{flex-wrap:nowrap;gap:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+ .sh-bg{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:22px;line-height:1}
+ .sh>.sh-b{font-size:20px}
+ .sh-r{gap:8px}.sh-r .sh-u,.sh-r #lo{display:none}
+ .sh-n{position:fixed;top:0;left:0;bottom:0;width:min(310px,86vw);flex:none;flex-direction:column;gap:2px;overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-right:1px solid var(--line);box-shadow:var(--sh);padding:0 10px 12px;transform:translateX(-105%);visibility:hidden;transition:transform .28s cubic-bezier(.6,0,.2,1),visibility 0s .28s;z-index:70}
+ .sh-n.open{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.6,0,.2,1),visibility 0s}
+ .sh-dh{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);padding:calc(14px + env(safe-area-inset-top,0px)) 4px 12px;margin-bottom:6px;border-bottom:1px solid var(--line);z-index:1}
+ .sh-x{width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:18px}
+ .sh-n a{display:flex;align-items:center;min-height:48px;padding:12px 14px;font-size:16px}
+ .sh-df{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding:14px 4px calc(6px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--bg2)}
+ .sh-df .sh-u{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .sh-bk{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:65}
+ .sh-bk.on{opacity:1;pointer-events:auto}
+ #view{padding:16px 12px 48px}
+}

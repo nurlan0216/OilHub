@@ -38,7 +38,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')waClose()});
 document.addEventListener('langchange',waClose);
 function toast(m){const e=$('#ts');e.textContent=m;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2800)}
 function can(p,big){const g=esc(p.sae||'');return `<svg viewBox="0 0 90 130" aria-hidden="true"><rect x="14" y="26" width="62" height="98" rx="10" fill="#23262b" stroke="#e0b25a" stroke-width="2"/><path d="M30 26V14a6 6 0 016-6h20l8 8v10" fill="none" stroke="#aeb4bc" stroke-width="4" stroke-linecap="round"/><rect x="24" y="48" width="42" height="44" rx="6" fill="#e0b25a"/><text x="45" y="76" text-anchor="middle" font-family="Exo 2,sans-serif" font-style="italic" font-weight="800" font-size="${g.length>5?9:13}" fill="#16181b">${g}</text></svg>`}
-const pimg=p=>p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">`:can(p);
+/* v2.22-S1: оригинальные фото из паспортов (assets/img/products). Поле image в таблице важнее; нет фото — старая SVG-канистра */
+const LOCAL_IMG={p01:1,p02:1,p03:1,p04:1,p05:1,p06:1,p09:1,p10:1,p26:1,p27:1};
+const imgSrc=p=>p.image||(LOCAL_IMG[p.id]?'assets/img/products/'+p.id+'.webp':'');
+const pimg=p=>{const s=imgSrc(p);return s?`<img src="${esc(s)}" alt="${esc(p.name)}" loading="lazy" decoding="async">`:can(p)};
 // v2.21-D3: ключи — слова из данных (ведро, бочка, куб), записаны кодами \u, чтобы в коде не было зашитого текста
 const PK={'\u0432\u0435\u0434\u0440\u043E':'pack.pail','\u0431\u043E\u0447\u043A\u0430':'pack.drum','\u043A\u0443\u0431':'pack.ibc'};const pack=s=>String(s).replace(/\((\u0432\u0435\u0434\u0440\u043E|\u0431\u043E\u0447\u043A\u0430|\u043A\u0443\u0431)\)/gi,(m,w)=>'('+t(PK[w.toLowerCase()])+')');
 const catName=id=>tx(D.Categories.find(c=>c.id===id),'name');

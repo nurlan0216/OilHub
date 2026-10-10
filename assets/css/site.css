@@ -150,3 +150,10 @@ footer{border-top:1px solid var(--line);padding:30px 0 90px;color:var(--mu);font
 @keyframes wshu{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 @keyframes wshf{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.wsh,.wsp{animation:none}}
+
+/* v2.22-S1: фото товаров */
+.can img{max-width:88%;max-height:88%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35));transition:transform .5s}
+.pc:hover .can img{transform:translateY(-4px) scale(1.04)}
+.pc .can{padding:34px 12px 8px}.pc .can img{max-height:100%}
+.pd .can{padding:40px 14px 14px}.pd .can img{max-height:330px;max-width:90%}
+.rs .can{padding:0}.rs .can img{max-height:80px}

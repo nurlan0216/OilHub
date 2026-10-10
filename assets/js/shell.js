@@ -14,8 +14,12 @@ function appShell(cfg){
  const errText=e=>{const c=String(e||'');if(/ERR_LOCKED/.test(c))return t('auth.many');if(/ERR_AUTH|auth/.test(c)&&c!=='net')return t('auth.bad');if(/ERR_FORBIDDEN|^forbidden$/.test(c))return t('err.forbidden');if(/ERR_STOCK/.test(c))return t('err.stock');if(/ERR_SLOT_TAKEN|^taken$/.test(c))return t('err.slotTaken');if(/ERR_NOT_FOUND/.test(c))return t('err.notFound');if(/ERR_POSTED/.test(c))return t('sale.locked');if(/ERR_BARCODE_DUP/.test(c))return t('barcode.dup');if(/ERR_SERVER/.test(c))return t('err.server');if(/ERR_BAD/.test(c))return t('err.bad');return t('err.net')};
  const logout=()=>{const old=token;token='';user=null;ls.s(K.token,'');if(old&&API_URL)post({action:'logout',token:old}).catch(()=>{});location.hash='';paint()};
  const roleNav=()=>cfg.nav.filter(([n])=>{const r=cfg.routes[n];return(!r.roles||r.roles.includes(user.role))&&(!r.perm||[].concat(r.perm).some(x=>(user.perms||[]).includes(x)))});
- const top=(withNav)=>`<header class="sh"><b class="sh-b">OilHub</b>${withNav?`<nav class="sh-n">${roleNav().map(([n,k])=>`<a href="#/${n}" data-n="${n}">${t(k)}</a>`).join('')}</nav>`:'<span></span>'}<span class="sh-r">${langPill()}${user?`<span class="sh-u">${esc(user.name||user.login)}</span><button class="btn ghost" id="lo">${t('auth.logout')}</button>`:''}</span></header><main id="view"></main>`;
- const afterTop=()=>{bindLang();if($('#lo'))$('#lo').onclick=logout};
+ /* v2.22-S2: на телефоне меню — боковая шторка (кнопка ☰ слева, затемнение, Esc, закрытие по пункту) */
+ const userBox=()=>user?`<span class=\"sh-u\">${esc(user.name||user.login)}</span><button class=\"btn ghost\" id=\"lo\">${t('auth.logout')}</button>`:'';
+ const top=(withNav)=>`<header class=\"sh\">${withNav?`<button class=\"sh-bg\" id=\"mb\" aria-expanded=\"false\" aria-controls=\"dr\" aria-label=\"${t('aria.menu')}\">\u2630</button>`:''}<b class=\"sh-b\">OilHub</b>${withNav?`<nav class=\"sh-n\" id=\"dr\" aria-label=\"${t('aria.menu')}\"><div class=\"sh-dh\"><b class=\"sh-b\">OilHub</b><button class=\"sh-x\" id=\"mx\" aria-label=\"${t('common.close')}\">\u2715</button></div>${roleNav().map(([n,k])=>`<a href=\"#/${n}\" data-n=\"${n}\">${t(k)}</a>`).join('')}<div class=\"sh-df\">${userBox().replace('id=\"lo\"','id=\"lo2\"')}</div></nav><div class=\"sh-bk\" id=\"bk\"></div>`:'<span></span>'}<span class=\"sh-r\">${langPill()}${userBox()}</span></header><main id=\"view\"></main>`;
+ const drawer=o=>{const d=$('#dr'),b=$('#bk'),m=$('#mb');if(!d)return;d.classList.toggle('open',o);if(b)b.classList.toggle('on',o);if(m)m.setAttribute('aria-expanded',o);document.body.classList.toggle('sh-lock',o)};
+ const afterTop=()=>{bindLang();if($('#lo'))$('#lo').onclick=logout;if($('#lo2'))$('#lo2').onclick=logout;
+  if($('#mb')){$('#mb').onclick=()=>drawer(!$('#dr').classList.contains('open'));$('#mx').onclick=()=>drawer(false);$('#bk').onclick=()=>drawer(false);$$('#dr a').forEach(a=>a.addEventListener('click',()=>drawer(false)))}};
  function loginView(err){setTitle();root().innerHTML=top(false);afterTop();
   view('login',`<form class="panel" id="lf" style="max-width:420px;margin:40px auto"><h2 style="font-size:28px;margin-bottom:6px">${t('auth.login')}</h2>
    <label>${t('auth.user')}</label><input name="l" autocomplete="username" required><label>${t('auth.pass')}</label><input name="p" type="password" autocomplete="current-password" required>
@@ -30,12 +34,13 @@ function appShell(cfg){
  function shellView(){setTitle();root().innerHTML=top(true);afterTop();
   const nv=roleNav(),dd=nv.some(x=>x[0]===cfg.def)||!nv.length?cfg.def:nv[0][0];
   router=createRouter({routes:cfg.routes,def:dd,role:()=>user.role,perms:()=>user.perms||[],on:{
-   render(ctx,n){$$('.sh-n a').forEach(a=>a.classList.toggle('on',a.dataset.n===n));const r=cfg.routes[n];
+   render(ctx,n){drawer(false);$$('.sh-n a').forEach(a=>a.classList.toggle('on',a.dataset.n===n));const r=cfg.routes[n];
     view(n,(cfg.views&&cfg.views[n]?cfg.views[n](ctx,user):`<h1 style="font-size:34px">${t(r.k)}</h1><p class="sub">${t('gate.soon')}</p>`))},
    forbidden(){view('forbidden',msg(t('gate.noAccess'),homeLink()))},
    notFound(){view('notFound',msg(t('gate.notFound'),homeLink()))}}});
   router.resolve()}
  let bound=false;
+ addEventListener('keydown',e=>{if(e.key==='Escape')drawer(false)});
  async function paint(){document.documentElement.lang=L;
   if(!API_URL){setTitle();root().innerHTML=top(false);afterTop();return view('config',msg(t('err.noApi')))}
   if(token&&!user){setTitle();root().innerHTML=top(false);afterTop();view('loading',`<p class="sub" style="text-align:center;margin-top:60px">${t('common.loading')}</p>`);const r=await post({action:'whoami',token}).catch(()=>({error:'net'}));
