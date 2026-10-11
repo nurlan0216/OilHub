@@ -39,9 +39,15 @@ document.addEventListener('langchange',waClose);
 function toast(m){const e=$('#ts');e.textContent=m;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2800)}
 function can(p,big){const g=esc(p.sae||'');return `<svg viewBox="0 0 90 130" aria-hidden="true"><rect x="14" y="26" width="62" height="98" rx="10" fill="#23262b" stroke="#e0b25a" stroke-width="2"/><path d="M30 26V14a6 6 0 016-6h20l8 8v10" fill="none" stroke="#aeb4bc" stroke-width="4" stroke-linecap="round"/><rect x="24" y="48" width="42" height="44" rx="6" fill="#e0b25a"/><text x="45" y="76" text-anchor="middle" font-family="Exo 2,sans-serif" font-style="italic" font-weight="800" font-size="${g.length>5?9:13}" fill="#16181b">${g}</text></svg>`}
 /* v2.22-S1: оригинальные фото из паспортов (assets/img/products). Поле image в таблице важнее; нет фото — старая SVG-канистра */
-const LOCAL_IMG={p01:1,p02:1,p03:1,p04:1,p05:1,p06:1,p09:1,p10:1,p26:1,p27:1};
-const imgSrc=p=>p.image||(LOCAL_IMG[p.id]?'assets/img/products/'+p.id+'.webp':'');
-const pimg=p=>{const s=imgSrc(p);return s?`<img src="${esc(s)}" alt="${esc(p.name)}" loading="lazy" decoding="async">`:can(p)};
+const LOCAL_IMG={p01:1,p02:1,p03:1,p04:1,p05:1,p06:1,p09:1,p10:1,p12:1,p26:1,p27:1};/* p12: файла пока нет, пока он не добавлен, показывается SVG (см. обработчик ниже) */
+/* v2.22-S7: в поле image можно указать несколько ссылок через ; или перенос строки: на странице товара они листаются, в карточках берётся первая */
+const imgList=p=>{const a=String(p.image||'').split(/[;\n]+/).map(x=>x.trim()).filter(Boolean);return a.length?a:(LOCAL_IMG[p.id]?['assets/img/products/'+p.id+'.webp']:[])};
+/* v2.22-S9: у товара несколько фасовок: цена показывается как «от …» (price = цена первой, самой маленькой фасовки) */
+const nSz=p=>String(p.sizes||'').split(';').filter(x=>x.trim()).length,priceOf=p=>{const m=money(p.price);return m&&nSz(p)>1?t('catalog.from',{p:m}):m};
+const imgSrc=p=>imgList(p)[0]||'';
+const pimg=p=>{const s=imgSrc(p);return s?`<img src="${esc(s)}" alt="${esc(p.name)}" data-pid="${esc(p.id)}" loading="lazy" decoding="async">`:can(p)};
+/* нет файла фото (404): вместо битой картинки возвращаем SVG-канистру */
+addEventListener('error',e=>{const i=e.target;if(!i||i.tagName!=='IMG'||!i.dataset.pid)return;const p=((window.D||D||{}).Products||[]).find(x=>x.id===i.dataset.pid);if(!p||!i.parentNode)return;delete i.dataset.pid;const w=document.createElement('div');w.innerHTML=can(p);i.replaceWith(w.firstChild)},true);
 // v2.21-D3: ключи — слова из данных (ведро, бочка, куб), записаны кодами \u, чтобы в коде не было зашитого текста
 const PK={'\u0432\u0435\u0434\u0440\u043E':'pack.pail','\u0431\u043E\u0447\u043A\u0430':'pack.drum','\u043A\u0443\u0431':'pack.ibc'};const pack=s=>String(s).replace(/\((\u0432\u0435\u0434\u0440\u043E|\u0431\u043E\u0447\u043A\u0430|\u043A\u0443\u0431)\)/gi,(m,w)=>'('+t(PK[w.toLowerCase()])+')');
 const catName=id=>tx(D.Categories.find(c=>c.id===id),'name');
@@ -68,15 +74,35 @@ function chrome(){
   $('#hb').textContent=t('booking.online');$('#okx').textContent=t('common.close');$('#okT').textContent=t('booking.ok.title');
   const ph=S.phone,w=S.whatsapp;
   $('#ft').innerHTML=`<div class="fb"><span>© ${new Date().getFullYear()} ${esc(S.company||'OilHub')} · ${esc(L==='kk'?S.tagline_kk:S.tagline_ru)||''}</span><span>${ph?`<a href="tel:${esc(ph.replace(/[^\d+]/g,''))}">${esc(ph)}</a>`:''}${S.instagram?` · <a href="${esc(S.instagram)}" target="_blank" rel="noopener">Instagram</a>`:''}</span></div>`;
-  const wb=$('#wab'),wl=wa(t('wa.hello'));if(wl){wb.href=wl;wb.dataset.wa=t('wa.hello');wb.style.display=''}else{wb.removeAttribute('href');wb.removeAttribute('data-wa');wb.style.display='none'}/* B1: номера нет вообще — кнопка скрыта */
+  drBuild();/* v2.22-S7: меню-шторка; нижняя панель (вместо плавающей кнопки WhatsApp) собирается в route() через mbar() */
   const a=D.Ads.filter(x=>x.type==='notice'&&live(x))[0];
   $('#nt').innerHTML=a?`<div class="nt"><span>${esc(tx(a,'title'))}</span>${a.link?`<a href="${esc(a.link)}">${esc(tx(a,'btn')||t('common.more'))}</a>`:''}</div>`:'';
 }
+/* ---------- v2.22-S7: меню-шторка и нижняя панель на телефоне ---------- */
+const IC={bk:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',wa:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9.5c.3 2.6 2.8 5 5.5 5.5l1.3-1.3-2-1-1 .7c-1-.4-2-1.4-2.4-2.4l.7-1-1-2z"/></svg>',ph:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>'};
+const sPhone=()=>String(S.phone||(srt(D.Points||[]).find(x=>x.phone)||{}).phone||'');
+const telHref=v=>'tel:'+String(v).replace(/[^\d+]/g,'');
+function drBuild(){const d=$('#dr');if(!d)return;const ph=sPhone();
+ d.innerHTML=`<div class="dr-h"><a class="logo" href="#/"><b>Oil</b><i>Hub</i></a><button type="button" class="dr-x" aria-label="${esc(t('common.close'))}">✕</button></div><nav class="dr-n" aria-label="${esc(t('aria.menu'))}">${NAV.map(([h,k])=>`<a href="#/${h}" data-r="${h}">${t(k)}</a>`).join('')}</nav><div class="dr-f"><a class="btn gold" href="#/booking">${t('booking.online')}</a><button type="button" class="btn ghost" data-pwa-install hidden></button>${ph?`<a class="btn ghost" href="${esc(telHref(ph))}">${esc(ph)}</a>`:''}</div>`;
+ if(window.OH_PWA&&OH_PWA.paint)OH_PWA.paint();
+ const h=location.hash.replace(/^#\/?/,'').split(/[\/?]/)[0];$$('#dr .dr-n a').forEach(a=>a.classList.toggle('on',a.dataset.r===h))}
+function drOpen(o){const d=$('#dr'),k=$('#dbk'),b=$('#bg');if(!d||o===d.classList.contains('on'))return;d.classList.toggle('on',o);k.classList.toggle('on',o);d.setAttribute('aria-hidden',o?'false':'true');b.setAttribute('aria-expanded',o?'true':'false');document.body.classList.toggle('dr-lock',o);
+ if(o){drOpen.f=document.activeElement;const x=$('.dr-x',d);if(x)x.focus()}else{const f=drOpen.f;drOpen.f=null;if(f&&f.focus&&document.contains(f))try{f.focus()}catch(e){}}}
+/* нижняя панель: обычные страницы — «Записаться / WhatsApp / Позвонить»; карточка товара — цена и «Заказать / Записаться на замену»; форма записи — панели нет */
+const prodWa=p=>t('wa.product')+' '+p.name+(p.sizes?' · '+p.sizes.split(';').map(x=>pack(x.trim())).join(', '):'');
+function mbar(r,p){const b=$('#mb');if(!b)return;let h='',cls='mb';
+ if(r==='booking'){h=''}
+ else if(r==='product'&&p){const pr=priceOf(p),old=money(p.old_price),w=waBtn('btn gold',t('catalog.order'),prodWa(p));cls='mb mb-p';
+  h=`<div class="mb-pr">${pr?`<b>${pr}</b>${old?`<s>${old}</s>`:''}`:`<span>${t('catalog.priceNote')}</span>`}</div><div class="mb-bt">${w}<a class="btn ghost" href="#/booking">${t('booking.oilChange')}</a></div>`}
+ else{const w=waBtn('mb-i mb-wa',IC.wa+'<span>WhatsApp</span>',t('wa.hello')),ph=sPhone();
+  h=`<a class="mb-i mb-bk" href="#/booking">${IC.bk}<span>${t('booking.cta')}</span></a>${w}${ph?`<a class="mb-i mb-ph" href="${esc(telHref(ph))}">${IC.ph}<span>${t('common.call')}</span></a>`:''}`}
+ if(window.ResizeObserver&&!mbar.ro){mbar.ro=new ResizeObserver(()=>document.documentElement.style.setProperty('--mbh',b.offsetHeight+'px'));mbar.ro.observe(b)}/* отступ страницы равен высоте панели */
+ b.className=cls;b.innerHTML=h;b.hidden=!h;b.setAttribute('aria-label',t('contacts.title'));document.body.classList.toggle('has-mb',!!h)}
 function lang(l,anim){setLang(l);const _ts=$('#ts');if(_ts)_ts.classList.remove('on');$$('#lg button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));$('#lg').dataset.v=l==='kk'?0:1;
   const go=()=>{chrome();route(true)};if(anim){document.body.style.opacity=.2;setTimeout(()=>{go();document.body.style.opacity=1},170)}else go()}
 function theme(m){document.documentElement.dataset.theme=m;ls.s('theme',m);$('#ti').textContent=m==='dark'?'🌙':'☀️';$('meta[name=theme-color]').content=m==='dark'?'#0e0f11':'#f4f4f2'}
 /* ---------- cards ---------- */
-function pcard(p){const pr=money(p.price),old=money(p.old_price),out=p.stock!==''&&Number(p.stock)===0;
+function pcard(p){const pr=priceOf(p),old=money(p.old_price),out=p.stock!==''&&Number(p.stock)===0;
  return `<article class="pc"><a class="in" href="#/product/${esc(p.slug)}"><div class="can">${isOn(p.is_new)?`<span class="bdg">${t('catalog.new')}</span>`:''}${p.sae?`<span class="sae">${esc(p.sae)}</span>`:''}${pimg(p)}</div><small>${esc(p.brand)} · ${esc(catName(p.cat))}</small><span class="nm">${esc(p.name)}</span></a><div class="tags">${appr(p).filter(a=>/^(ACEA|API|ILSAC)/.test(a)).slice(0,3).map(a=>`<span>${esc(a)}</span>`).join('')}</div><div class="row"><span class="pr">${pr?pr+(old?`<s>${old}</s>`:''):`<span style="font:500 13px Manrope;color:var(--mu)">${t('catalog.priceNote')}</span>`}</span><a href="#/product/${esc(p.slug)}" style="color:var(--gold);font-weight:700">${out?t('catalog.outOfStock'):t('common.more')}</a></div></article>`}
 const svCard=(s,d)=>`<article class="sv rv" style="transition-delay:${d*.1}s"><svg viewBox="0 0 64 64"><g class="a"><circle cx="32" cy="32" r="22"/><path d="M32 10v8M32 46v8M10 32h8M46 32h8"/></g><path d="M32 24c0 0-6 6-6 10a6 6 0 0012 0c0-4-6-10-6-10z"/></svg><h3>${esc(tx(s,'name'))}</h3><p>${esc(tx(s,'desc'))}</p><ul>${lines(tx(s,'includes')).slice(0,3).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="pr"><span>${s.price?(isOn(s.price_from)?t('common.from')+' ':'')+money(s.price):t('catalog.priceOnRequest')}${s.duration?` · ${esc(s.duration)} ${t('common.min')}`:''}</span><a href="#/booking?s=${esc(s.id)}" class="btn gold" style="padding:10px 18px">${t('booking.cta')}</a></div></article>`;
 const adCard=a=>`<article class="cd rv">${a.image?`<img src="${esc(a.image)}" alt="" loading="lazy">`:''}<div><h3>${esc(tx(a,'title'))}</h3><p>${esc(tx(a,'text'))}</p>${a.link?`<a class="btn ghost" href="${esc(a.link)}" ${/^http/.test(a.link)?'target="_blank" rel="noopener"':''}>${esc(tx(a,'btn')||t('common.more'))}</a>`:''}</div></article>`;
@@ -109,17 +135,26 @@ let CF={q:'',cat:'',sae:'',sort:''};
 function filtered(){let a=D.Products.filter(p=>isOn(p.active));const q=norm(CF.q);if(CF.cat)a=a.filter(p=>p.cat===CF.cat);if(CF.sae)a=a.filter(p=>p.sae===CF.sae);if(q)a=a.filter(p=>norm(p.name+p.sae+p.sku+p.approvals).includes(q));
  if(CF.sort==='p1')a.sort((x,y)=>(+x.price||1e12)-(+y.price||1e12));else if(CF.sort==='p2')a.sort((x,y)=>(+y.price||0)-(+x.price||0));else if(CF.sort==='nm')a.sort((x,y)=>x.name.localeCompare(y.name));else a=srt(a);return a}
 function pCatalog(cat){if(cat!==undefined)CF.cat=cat;const saes=[...new Set(D.Products.map(p=>p.sae).filter(Boolean))];
- return `<section class="pg"><div class="wrap"><h1>${t('catalog.title')}</h1><p class="sub">${t('catalog.sub')}</p><div class="cats"><button data-c="" class="${CF.cat?'':'on'}">${t('common.all')}</button>${srt(D.Categories).map(c=>`<button data-c="${esc(c.id)}" class="${CF.cat===c.id?'on':''}">${esc(tx(c,'name'))}</button>`).join('')}</div>
- <div class="bar"><input id="fq" type="search" placeholder="${t('catalog.searchPh')}" value="${esc(CF.q)}"><select id="fs"><option value="">${t('catalog.anySae')}</option>${saes.map(s=>`<option ${CF.sae===s?'selected':''}>${esc(s)}</option>`).join('')}</select><select id="fo"><option value="">${t('catalog.sort.default')}</option><option value="p1" ${CF.sort==='p1'?'selected':''}>${t('catalog.sort.priceAsc')}</option><option value="p2" ${CF.sort==='p2'?'selected':''}>${t('catalog.sort.priceDesc')}</option><option value="nm" ${CF.sort==='nm'?'selected':''}>${t('catalog.sort.name')}</option></select></div><div class="grid" id="cg"></div></div></section>`}
+ /* v2.22-S7: .cf-top (поиск и категории) на телефоне закреплён под шапкой, категории горизонтальной лентой; на компьютере раскладка прежняя (см. site.css) */
+ return `<section class="pg"><div class="wrap"><h1>${t('catalog.title')}</h1><p class="sub">${t('catalog.sub')}</p><div class="cf"><div class="cf-top"><input id="fq" type="search" enterkeyhint="search" placeholder="${t('catalog.searchPh')}" value="${esc(CF.q)}"><div class="cats cats-rail"><button data-c="" class="${CF.cat?'':'on'}">${t('common.all')}</button>${srt(D.Categories).map(c=>`<button data-c="${esc(c.id)}" class="${CF.cat===c.id?'on':''}">${esc(tx(c,'name'))}</button>`).join('')}</div></div>
+ <div class="cf-o"><select id="fs"><option value="">${t('catalog.anySae')}</option>${saes.map(s=>`<option ${CF.sae===s?'selected':''}>${esc(s)}</option>`).join('')}</select><select id="fo"><option value="">${t('catalog.sort.default')}</option><option value="p1" ${CF.sort==='p1'?'selected':''}>${t('catalog.sort.priceAsc')}</option><option value="p2" ${CF.sort==='p2'?'selected':''}>${t('catalog.sort.priceDesc')}</option><option value="nm" ${CF.sort==='nm'?'selected':''}>${t('catalog.sort.name')}</option></select></div></div><div class="grid" id="cg"></div></div></section>`}
 function catInit(){const draw=()=>{const a=filtered();$('#cg').innerHTML=a.length?a.map(pcard).join(''):`<p class="sub">${t('catalog.empty')}</p>`;tilt()};draw();
  $$('.cats button').forEach(b=>b.onclick=()=>{CF.cat=b.dataset.c;$$('.cats button').forEach(x=>x.classList.toggle('on',x===b));draw()});
+ const on=$('.cats-rail button.on');if(on&&on.scrollIntoView)try{const r=on.parentNode;r.scrollLeft=Math.max(0,on.offsetLeft-12)}catch(e){}
  $('#fq').oninput=e=>{CF.q=e.target.value;draw()};$('#fs').onchange=e=>{CF.sae=e.target.value;draw()};$('#fo').onchange=e=>{CF.sort=e.target.value;draw()}}
 function tilt(){$$('.pc').forEach(c=>{c.onpointermove=e=>{const r=c.getBoundingClientRect();c.style.transform=`perspective(700px) rotateY(${((e.clientX-r.left)/r.width-.5)*8}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-5px)`};c.onpointerleave=()=>c.style.transform=''})}
+/* v2.22-S7: фото товара листаются (scroll-snap); одно фото — без точек */
+function gallery(p){const L2=imgList(p),b=isOn(p.is_new)?`<span class="bdg">${t('catalog.new')}</span>`:'';
+ if(!L2.length)return `<div class="can">${b}${can(p)}</div>`;
+ return `<div class="can gl">${b}<div class="gt" id="gt" tabindex="0" role="group" aria-label="${esc(p.name)}">${L2.map((u,i)=>`<div class="gs"><img src="${esc(u)}" alt="${esc(p.name)}" data-pid="${esc(p.id)}" decoding="async"${i?' loading="lazy"':''}></div>`).join('')}</div>${L2.length>1?`<div class="gd">${L2.map((_,i)=>`<button type="button" class="${i?'':'on'}" data-g="${i}" aria-label="${i+1}/${L2.length}"></button>`).join('')}</div>`:''}</div>`}
+function galInit(){const g=$('#gt');if(!g)return;const ds=$$('.gd button');if(!ds.length)return;let raf=0;
+ g.addEventListener('scroll',()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const i=Math.round(g.scrollLeft/Math.max(1,g.clientWidth));ds.forEach((d,k)=>d.classList.toggle('on',k===i))})},{passive:true});
+ ds.forEach(d=>d.onclick=()=>g.scrollTo({left:g.clientWidth*Number(d.dataset.g),behavior:'smooth'}))}
 function pProduct(slug){const p=D.Products.find(x=>x.slug===slug&&isOn(x.active));if(!p)return nf();let typ=[];try{typ=JSON.parse(p.typical||'[]')}catch(e){}
- const ap=appr(p),pr=money(p.price),old=money(p.old_price);
+ const ap=appr(p),pr=priceOf(p),old=money(p.old_price);
  document.title=p.name+' — OilHub';$('#md').content=(tx(p,'short')||p.name).slice(0,160);
  const ld={'@context':'https://schema.org','@type':'Product',name:p.name,brand:{'@type':'Brand',name:p.brand},sku:p.sku||undefined,description:tx(p,'short')};if(p.price)ld.offers={'@type':'Offer',price:p.price,priceCurrency:'KZT',availability:Number(p.stock)===0&&p.stock!==''?'https://schema.org/OutOfStock':'https://schema.org/InStock'};
- return `<section class="pg"><div class="wrap"><div class="crumb"><a href="#/catalog">${t('catalog.back')}</a></div><div class="pd"><div><div class="can">${isOn(p.is_new)?`<span class="bdg">${t('catalog.new')}</span>`:''}${pimg(p)}</div></div><div><small style="color:var(--mu)">${esc(p.brand)} · ${esc(catName(p.cat))}${p.sku?` · ${t('catalog.sku')}: ${esc(p.sku)}`:''}</small><h1 style="font-size:clamp(26px,3.6vw,40px);margin:8px 0 14px">${esc(p.name)}</h1><p style="color:var(--mu);margin-bottom:16px">${esc(tx(p,'short'))}</p><p style="margin-bottom:18px"><span class="pr" style="font:italic 800 30px 'Exo 2'">${pr||`<span style="font:500 15px Manrope;color:var(--mu)">${t('catalog.priceNote')}</span>`}</span>${old?` <span class="old">${old}</span>`:''}</p>${p.sizes?`<p style="margin-bottom:14px"><b>${t('catalog.sizes')}:</b> ${p.sizes.split(';').map(s=>`<span class="ch">${esc(pack(s.trim()))}</span>`).join('')}</p>`:''}<div class="cta">${waBtn('btn gold',t('catalog.order'),t('wa.product')+' '+p.name+(p.sizes?' · '+p.sizes.split(';').map(x=>pack(x.trim())).join(', '):''))}<a class="btn ghost" href="#/booking">${t('booking.oilChange')}</a></div>${p.doc?`<p style="margin-top:18px"><a href="${esc(p.doc)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:700">📄 ${t('catalog.doc')}</a></p>`:''}</div></div>
+ return `<section class="pg"><div class="wrap"><div class="crumb"><a href="#/catalog">${t('catalog.back')}</a></div><div class="pd"><div>${gallery(p)}</div><div><small style="color:var(--mu)">${esc(p.brand)} · ${esc(catName(p.cat))}${p.sku?` · ${t('catalog.sku')}: ${esc(p.sku)}`:''}</small><h1 style="font-size:clamp(26px,3.6vw,40px);margin:8px 0 14px">${esc(p.name)}</h1><p style="color:var(--mu);margin-bottom:16px">${esc(tx(p,'short'))}</p><p class="pdp" style="margin-bottom:18px"><span class="pr" style="font:italic 800 30px 'Exo 2'">${pr||`<span style="font:500 15px Manrope;color:var(--mu)">${t('catalog.priceNote')}</span>`}</span>${old?` <span class="old">${old}</span>`:''}</p>${p.sizes?`<p style="margin-bottom:14px"><b>${t('catalog.sizes')}:</b> ${p.sizes.split(';').map(s=>`<span class="ch">${esc(pack(s.trim()))}</span>`).join('')}</p>`:''}<div class="cta">${waBtn('btn gold',t('catalog.order'),prodWa(p))}<a class="btn ghost" href="#/booking">${t('booking.oilChange')}</a></div>${p.doc?`<p style="margin-top:18px"><a href="${esc(p.doc)}" target="_blank" rel="noopener" style="color:var(--gold);font-weight:700">📄 ${t('catalog.doc')}</a></p>`:''}</div></div>
  ${ap.length?`<div class="sec"><h3>${t('catalog.approvals')}</h3>${ap.map(a=>`<span class="ch hl">${esc(a)}</span>`).join('')}</div>`:''}
  ${lines(tx(p,'apps')).length?`<div class="sec"><h3>${t('catalog.applications')}</h3><ul>${lines(tx(p,'apps')).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
  ${lines(tx(p,'features')).length?`<div class="sec"><h3>${t('catalog.features')}</h3><ul>${lines(tx(p,'features')).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
@@ -130,6 +165,9 @@ function pProduct(slug){const p=D.Products.find(x=>x.slug===slug&&isOn(x.active)
 const API_RANK=['SJ','SL','SM','SN','SN PLUS','SP'];
 /* логика сопоставления вынесена в selector-core.js (OilSel), её же использует касса */
 const matchOils=(reqs,sae)=>OilSel.match(D.Products,reqs,sae);
+/* ширина телефона для подбора по шагам; при повороте экрана подбор перерисовывается */
+const MQM=window.matchMedia?matchMedia('(max-width:700px)'):{matches:false};let selRedraw=null;
+if(MQM.addEventListener)MQM.addEventListener('change',()=>{if(selRedraw&&$('#sp'))selRedraw()});
 let SEL={tab:'car',b:'',m:'',y:'',e:'',spec:[],sae:''};
 function resHTML(r,reqs,car){if(!r)return'';return `<div class="res">${r.exact?'':`<p class="note">${t(r.list.length?'selector.noExact':'selector.noExactNone')}</p>`}${r.list.map(({p,m,exact},i)=>`<div class="rs ${exact?'ex':''}" style="animation-delay:${i*.08}s"><div class="can"><span class="sae" style="font-size:14px">${esc(p.sae)}</span>${pimg(p)}</div><div><div class="exb">${exact?'✓ '+t('selector.exact'):t('selector.partial')+' · '+m.length+'/'+reqs.length+' · '+t('selector.askExpert')}</div><b>${esc(p.name)}</b><div style="margin-top:8px">${appr(p).map(a=>`<span class="ch ${reqs.some(q=>norm(q)===norm(a))?'hl':''}">${esc(a)}</span>`).join('')}</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn gold" style="padding:11px 18px" href="#/product/${esc(p.slug)}">${t('common.more')}</a>${car?`<a class="btn ghost" style="padding:11px 18px" href="#/booking?b=${encodeURIComponent(SEL.b)}&m=${encodeURIComponent(SEL.m)}&y=${encodeURIComponent(SEL.y)}&o=${encodeURIComponent(p.name)}">${t('booking.oilChange')}</a>`:''}${waBtn('btn ghost',t('wa.ask'),car?t('wa.carOil',{car,oil:p.name}):t('wa.oil',{oil:p.name}),'padding:11px 18px')}</div></div>`).join('')}${r.list.length?'':`<p class="sub">${t('catalog.empty')}</p>`}</div>`}
 // A5. ПОДКЛЮЧЕНИЕ ПОИСКА ПО ГОСНОМЕРУ / VIN (пока НЕ реализовано, нужен внешний источник данных).
@@ -148,24 +186,41 @@ function selInit(){const C=D.Compat;
  // A4: топливо хранится кодом (petrol|diesel|hybrid|lpg), на экране показывается через t('compat.fuel.*').
  // Значение option остаётся «двигатель · код», по нему идёт сопоставление; переводится только подпись.
  const engL=OilSel.engLabel;
+ /* v2.22-S7: на телефоне (≤700px) подбор по автомобилю идёт по шагам, один вопрос на экран; на компьютере прежний каскад списков */
+ const KS=['b','m','y','e'],STL=['car.brand','car.model','car.year','car.engine'];
+ const stOpts=st=>st===0?OilSel.brands(C):st===1?OilSel.models(C,SEL.b):st===2?OilSel.years(C,SEL.b,SEL.m):OilSel.engines(C,SEL.b,SEL.m,SEL.y);
+ const clrFrom=i=>KS.slice(i).forEach(k=>SEL[k]='');
+ function carRes(){const c=OilSel.findCar(C,SEL.b,SEL.m,SEL.y,SEL.e);
+  if(!c||!String(c.spec_required).trim()){sr.innerHTML=`<p class="note" style="margin-top:20px">${t('selector.noCar')}</p>`;return}
+  const reqs=OilSel.reqsOf(c),r=matchOils(reqs,c.sae);
+  sr.innerHTML=`<p style="margin-top:22px"><b>${t('selector.required')}</b> ${reqs.map(x=>`<span class="ch hl">${esc(x)}</span>`).join('')}${c.sae?`<span class="ch hl">SAE ${esc(c.sae)}</span>`:''}</p>${c.note?`<p class="note">${esc(c.note)}</p>`:''}`+resHTML(r,reqs,[SEL.b,SEL.m,SEL.y,engL(SEL.e)].join(' '))}
+ function wizDraw(){let st=KS.findIndex(k=>!SEL[k]);if(st<0)st=4;
+  const chips=KS.slice(0,st).map((k,i)=>`<button type="button" class="ch hl wz-c" data-i="${i}" aria-label="${esc(t(STL[i])+': '+(k==='e'?engL(SEL[k]):SEL[k]))}">${esc(k==='e'?engL(SEL[k]):SEL[k])}</button>`).join('');
+  const vals=st<4?stOpts(st):[];
+  const list=st<4?(vals.length?`${vals.length>8?`<input type="search" class="wz-q" placeholder="${esc(t('common.search'))}" aria-label="${esc(t('common.search'))}" autocomplete="off">`:''}<div class="opts wz-o${st===3?' wz-1':''}">${vals.map(v=>`<button type="button" data-v="${esc(v)}">${esc(st===3?engL(v):v)}</button>`).join('')}</div>`:`<p class="note">${t('selector.noCar')}</p>`):'';
+  sp.innerHTML=`<div class="wz"><div class="steps" aria-hidden="true">${KS.map((_,i)=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>${chips?`<div class="wz-ch">${chips}</div>`:''}${st<4?`<div class="q">${t(STL[st])}</div>${list}`:''}${st>0?`<button type="button" class="btn ghost wz-bk">${t('common.back')}</button>`:''}</div>`;
+  const up=()=>{if(sp.getBoundingClientRect().top<70)sp.scrollIntoView({block:'start'})};
+  $$('.wz-o button',sp).forEach(b=>b.onclick=()=>{SEL[KS[st]]=b.dataset.v;clrFrom(st+1);draw();up()});
+  $$('.wz-c',sp).forEach(b=>b.onclick=()=>{clrFrom(Number(b.dataset.i));draw();up()});
+  const bk=$('.wz-bk',sp);if(bk)bk.onclick=()=>{clrFrom(st-1);draw();up()};
+  const q=$('.wz-q',sp);if(q)q.oninput=e=>{const n=norm(e.target.value);$$('.wz-o button',sp).forEach(x=>x.style.display=norm(x.textContent).includes(n)?'':'none')};
+  if(st===4)carRes()}
  function sel(id,lab,opts,val,L){return `<div><label>${lab}</label><select id="${id}"><option value="">${t('common.choose')}</option>${opts.map(o=>`<option value="${esc(o)}" ${String(val)===String(o)?'selected':''}>${esc(L?L(o):o)}</option>`).join('')}</select></div>`}
  function draw(){sr.innerHTML='';
   if(SEL.tab==='car'){if(!C.length){sp.innerHTML=`<p>${t('selector.noCompat')}</p>`;return}
+   if(MQM.matches)return wizDraw();
    const br=OilSel.brands(C),md=OilSel.models(C,SEL.b),rows=C.filter(c=>c.brand===SEL.b&&c.model===SEL.m);
    const yrs=OilSel.years(C,SEL.b,SEL.m),en=OilSel.engines(C,SEL.b,SEL.m,SEL.y);
    sp.innerHTML=`<div class="fr2">${sel('sb',t('car.brand'),br,SEL.b)}${sel('sm',t('car.model'),md,SEL.m)}${sel('sy',t('car.year'),yrs,SEL.y)}${sel('se',t('car.engine'),en,SEL.e,engL)}</div>`;
    $('#sb').onchange=e=>{SEL.b=e.target.value;SEL.m=SEL.y=SEL.e='';draw()};$('#sm').onchange=e=>{SEL.m=e.target.value;SEL.y=SEL.e='';draw()};$('#sy').onchange=e=>{SEL.y=e.target.value;SEL.e='';draw()};$('#se').onchange=e=>{SEL.e=e.target.value;draw()};
-   if(SEL.b&&SEL.m&&SEL.y&&SEL.e){const c=OilSel.findCar(C,SEL.b,SEL.m,SEL.y,SEL.e);
-    if(!c||!String(c.spec_required).trim()){sr.innerHTML=`<p class="note" style="margin-top:20px">${t('selector.noCar')}</p>`;return}
-    const reqs=OilSel.reqsOf(c),r=matchOils(reqs,c.sae);
-    sr.innerHTML=`<p style="margin-top:22px"><b>${t('selector.required')}</b> ${reqs.map(x=>`<span class="ch hl">${esc(x)}</span>`).join('')}${c.sae?`<span class="ch hl">SAE ${esc(c.sae)}</span>`:''}</p>${c.note?`<p class="note">${esc(c.note)}</p>`:''}`+resHTML(r,reqs,[SEL.b,SEL.m,SEL.y,engL(SEL.e)].join(' '))}
+   if(SEL.b&&SEL.m&&SEL.y&&SEL.e)carRes();
    else if(SEL.b&&SEL.m&&!rows.length)sr.innerHTML=`<p class="note" style="margin-top:20px">${t('selector.noCar')}</p>`;
   }else{const {grp,saes}=OilSel.specGroups(D.Products);
    sp.innerHTML=`<p style="margin-bottom:12px">${t('selector.pickSpec')}</p>${['ACEA','API','ILSAC'].filter(g=>grp[g]).map(g=>`<div style="margin-bottom:10px"><b style="font-size:13px;color:var(--mu)">${g}</b><div class="cats" style="margin:6px 0 0">${grp[g].map(a=>`<button type="button" data-a="${esc(a)}" class="${SEL.spec.includes(a)?'on':''}">${esc(a.replace(g+' ',''))}</button>`).join('')}</div></div>`).join('')}<div style="margin-bottom:10px"><b style="font-size:13px;color:var(--mu)">OEM</b><input id="oemq" placeholder="${t('selector.specSearchPh')}" style="margin-top:6px;max-width:320px"><div class="cats" style="margin:8px 0 0;max-height:150px;overflow:auto" id="oemb">${Object.keys(grp).filter(g=>!['ACEA','API','ILSAC'].includes(g)).flatMap(g=>grp[g]).map(a=>`<button type="button" data-a="${esc(a)}" class="${SEL.spec.includes(a)?'on':''}">${esc(a)}</button>`).join('')}</div></div><div style="max-width:260px">${sel('ssae','SAE',saes,SEL.sae)}</div><button class="btn gold" id="sgo" style="margin-top:18px">${t('selector.find')}</button>`;
    $$('#sp [data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;SEL.spec=SEL.spec.includes(a)?SEL.spec.filter(x=>x!==a):[...SEL.spec,a];b.classList.toggle('on')});
    $('#ssae').onchange=e=>SEL.sae=e.target.value;$('#oemq').oninput=e=>{const q=norm(e.target.value);$$('#oemb button').forEach(x=>x.style.display=norm(x.textContent).includes(q)?'':'none')};
    $('#sgo').onclick=()=>{if(!SEL.spec.length&&!SEL.sae){toast(t('selector.pickSpec'));return}const r=SEL.spec.length?matchOils(SEL.spec,SEL.sae):OilSel.bySae(D.Products,SEL.sae);sr.innerHTML=resHTML(r,SEL.spec)}}}
- draw()}
+ selRedraw=draw;draw()}
 const pPromos=()=>{const a=srt(D.Promos.filter(live));return `<section class="pg"><div class="wrap"><h1>${t('promo.title')}</h1><div class="g3" style="margin-top:30px">${a.map(promoCard).join('')}</div>${a.length?'':`<p class="sub">${t('promo.empty')}</p>`}</div></section>`};
 const pNews=()=>{const a=[...D.News.filter(n=>isOn(n.active))].sort((x,y)=>y.date>x.date?1:-1),ad=srt(D.Ads.filter(x=>(x.type==='card'||x.type==='offer')&&live(x)));return `<section class="pg"><div class="wrap"><h1>${t('news.title')}</h1><div class="g3" style="margin-top:30px">${ad.map(adCard).join('')}${a.map(newsCard).join('')}</div>${a.length||ad.length?'':`<p class="sub">${t('news.empty')}</p>`}</div></section>`};
 const pAbout=()=>`<section class="pg"><div class="wrap brand"><img src="logo.jpg" alt="OilHub" width="640" height="375"><div><h1 style="font-size:clamp(30px,4vw,48px)">${t('about.title')}</h1><p class="sub" style="margin-top:14px">${t('about.text')}</p><div class="wh" style="grid-template-columns:1fr 1fr">${[1,2,3,4].map(i=>`<div><b>${t('about.w'+i+'.title')}</b><span>${t('about.w'+i+'.text')}</span></div>`).join('')}</div></div></div></section>`;
@@ -197,12 +252,12 @@ async function bookInit(){const bd=$('#bd'),sl=$('#sl');BK.slot='';
 /* ---------- router ---------- */
 function route(keep){const h=location.hash.replace(/^#\/?/,''),[path,qs]=h.split('?'),seg=path.split('/'),q=new URLSearchParams(qs||''),m=$('#app');
  seo();
- $$('.menu a').forEach(a=>a.classList.toggle('on',a.dataset.r===seg[0]));$('#mn').classList.remove('o');
+ $$('.menu a,#dr .dr-n a').forEach(a=>a.classList.toggle('on',a.dataset.r===seg[0]));drOpen(false);
  let html,after=()=>{};const r=seg[0]||'';
  if(r==='')html=pHome(),after=()=>{stageInit();bannerInit()};
  else if(r==='services')html=pServices();
  else if(r==='catalog'){html=pCatalog(seg[1]?(D.Categories.find(c=>c.slug===seg[1])||{}).id||'':'');after=catInit}
- else if(r==='product')html=pProduct(seg[1]);
+ else if(r==='product'){html=pProduct(seg[1]);after=galInit}
  else if(r==='selector'){html=pSelector();after=selInit}
  else if(r==='promotions')html=pPromos();
  else if(r==='news')html=pNews();
@@ -211,6 +266,7 @@ function route(keep){const h=location.hash.replace(/^#\/?/,''),[path,qs]=h.split
  else if(r==='booking'){html=pBooking(q);after=bookInit}
  else html=nf();
  m.innerHTML=html;if(!keep)scrollTo(0,0);after();tilt();revInit();
+ mbar(r,r==='product'?D.Products.find(x=>x.slug===seg[1]&&isOn(x.active)):null)
 }
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
 const revInit=()=>$$('.rv').forEach(e=>io.observe(e));
@@ -218,7 +274,9 @@ addEventListener('hashchange',()=>route());
 addEventListener('scroll',()=>{$('#hd').classList.toggle('s',scrollY>30);const h=document.documentElement.scrollHeight-innerHeight;$('#pp').style.strokeDashoffset=151*(1-Math.min(1,scrollY/Math.max(1,h)))},{passive:true});
 $$('#lg button').forEach(b=>b.onclick=()=>lang(b.dataset.l,true));
 $('#th').onclick=()=>theme(document.documentElement.dataset.theme==='dark'?'light':'dark');
-$('#bg').onclick=()=>$('#mn').classList.toggle('o');
+$('#bg').onclick=()=>drOpen(!$('#dr').classList.contains('on'));$('#dbk').onclick=()=>drOpen(false);
+$('#dr').onclick=e=>{if(e.target.closest('.dr-x')||e.target.closest('a'))drOpen(false)};
+addEventListener('resize',()=>{if(innerWidth>1100)drOpen(false)});
 $('#okx').onclick=()=>$('#ok').classList.remove('on');$('#ok').onclick=e=>{if(e.target.id==='ok')$('#ok').classList.remove('on')};
-addEventListener('keydown',e=>{if(e.key==='Escape')$('#ok').classList.remove('on')});
+addEventListener('keydown',e=>{if(e.key==='Escape'){$('#ok').classList.remove('on');drOpen(false)}});
 (async()=>{theme(ls.g('theme')||'dark');$('#app').innerHTML='<section class="pg"><div class="wrap"><div class="grid"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div></section>';await load();lang(L,false)})();

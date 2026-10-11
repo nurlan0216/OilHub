@@ -88,3 +88,17 @@ function printBox(html){
  document.body.appendChild(d);document.body.classList.add('prn-on');
  addEventListener('afterprint',()=>{document.body.classList.remove('prn-on');d.remove()},{once:true});
  window.print()}
+
+/* v2.22-S3: сигнал бейджа пункта меню (число новых заявок). Шторка в shell.js слушает событие, лишних запросов к API нет */
+const ohBadge=(n,c)=>{try{document.dispatchEvent(new CustomEvent('oh:badge',{detail:{n,c:Number(c)||0}}))}catch(e){}};
+/* v2.22-S4: подписи ячеек для карточного вида таблиц на телефоне: текст <th> копируется в data-label ячеек той же колонки (с учётом colspan) */
+/* строка заголовка получает класс tbh, таблица — tbc; .pm, .cp-tb, .ci-tb и таблицы без заголовка не трогаются; повторный вызов безопасен */
+function labelCells(root){const r=root||document,
+ tbs=r.nodeType===1&&r.matches&&r.matches('table.tb')?[r]:(r.querySelectorAll?[...r.querySelectorAll('table.tb')]:[]);
+ tbs.forEach(tb=>{const c=tb.classList;if(c.contains('pm')||c.contains('cp-tb')||c.contains('ci-tb'))return;
+  const rows=[...tb.rows],isH=x=>x.cells.length>0&&[...x.cells].every(d=>d.tagName==='TH'),hr=rows.find(isH);if(!hr)return;
+  const lab=[];[...hr.cells].forEach(h=>{const s=(h.textContent||'').replace(/\s+/g,' ').trim();for(let i=0;i<(h.colSpan||1);i++)lab.push(s)});
+  c.add('tbc');
+  rows.forEach(x=>{if(isH(x)){x.classList.add('tbh');return}let col=0;
+   [...x.cells].forEach(d=>{const sp=d.colSpan||1,s=sp>1?'':(lab[col]||'');col+=sp;
+    if(s){if(d.getAttribute('data-label')!==s)d.setAttribute('data-label',s)}else if(d.hasAttribute('data-label'))d.removeAttribute('data-label')})})})}

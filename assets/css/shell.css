@@ -33,3 +33,44 @@ body.sh-lock{overflow:hidden}
  .sh-bk.on{opacity:1;pointer-events:auto}
  #view{padding:16px 12px 48px}
 }
+
+/* v2.22-S3: группы, бейдж «Заявки», точка на ☰, блок «Часто». Заголовки и блок «Часто» видны только в шторке (≤900px) */
+.sh-g,.sh-rc{display:none}
+.sh-bd{display:inline-block;min-width:20px;height:20px;padding:0 6px;margin-left:8px;border-radius:10px;background:#d9534f;color:#fff;font:700 12px/20px Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif;text-align:center}
+.sh-bd[hidden]{display:none}
+.sh-n a.on .sh-bd{background:#16181b;color:var(--gold)}
+.sh-bg{position:relative}
+.sh-dot{display:none;position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:50%;background:#d9534f;border:2px solid var(--card)}
+.sh-bg.has-new .sh-dot{display:block}
+@media(max-width:900px){
+ .sh-g{display:block;padding:14px 14px 4px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+ .sh-rc{display:block}.sh-rc:empty{display:none}
+ .sh-rc a{min-height:44px}
+ .sh-rc+.sh-g,.sh-rc>.sh-g+a{margin-top:0}
+ .sh-n a .sh-bd{margin-left:auto}
+ .sh-rc{padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:2px}
+}
+
+/* v2.22-S6: нижняя панель вкладок кассы (только ≤560px). Высота 56px + safe-area */
+.sh-tabs{display:none}
+@media(max-width:560px){
+ .sh-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg2);border-top:1px solid var(--line);height:calc(56px + env(safe-area-inset-bottom,0px));padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+ .sh-tabs a,.sh-tabs button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:56px;padding:4px 2px;font-size:11px;font-weight:600;line-height:1.2;color:var(--mu);background:none;border:0;border-radius:0}
+ .sh-tabs i{font-style:normal;font-size:20px;line-height:1}
+ .sh-tabs a.on,.sh-tabs button.on{color:var(--gold)}
+ .sh-tabs a.on::before,.sh-tabs button.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--gold)}
+ .sh-tabs .sh-bd{position:absolute;top:3px;left:calc(50% + 6px);margin:0;min-width:18px;height:18px;line-height:18px;font-size:11px}
+ body.has-tabs #view{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px) + 24px)}
+}
+
+/* v2.22-S10: индикатор сети в шапке кассы, кнопка установки в шторке */
+.sh-net{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border:1px solid var(--gold);border-radius:999px;background:rgba(213,166,75,.14);color:var(--tx);font:600 13px/1 inherit;font-family:inherit;white-space:nowrap;cursor:pointer}
+.sh-net[hidden],[data-pwa-install][hidden]{display:none!important}
+.sh-net i{font-style:normal;font-size:12px;color:var(--gold)}
+.sh-net b{font-weight:800}.sh-net em{font-style:normal}
+.sh-net.off{border-color:#d9534f;background:rgba(217,83,79,.16)}.sh-net.off i{color:#d9534f}
+@media(max-width:900px){
+ .sh-net{min-height:44px;min-width:44px;justify-content:center;padding:0 12px}
+ .sh-inst{display:flex;justify-content:center;width:calc(100% - 8px);margin:10px 4px 0;min-height:48px}
+}
+@media(max-width:380px){.sh-net.off em{display:none}}

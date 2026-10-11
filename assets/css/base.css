@@ -46,3 +46,44 @@ table.tb{width:100%;border-collapse:collapse;font-size:14px}.tb td,.tb th{paddin
 .ch-sum{padding:16px;margin:14px 0}.ch-sum p{margin:0 0 6px}.ch-l{display:grid;gap:10px}
 .ch-i{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:4px}.ch-i.bk{border-left:3px solid var(--gold)}.ch-i.vd{opacity:.55}.ch-i small{color:var(--mu)}
 .ch-h{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}.ch-h .ch{margin:0}.ch-s{margin-left:auto}
+
+/* v2.22-S4: таблицы → карточки на телефоне. Включаются только для таблиц, у которых есть .tbc (ставит labelCells() в utils.js:
+   есть строка заголовка; .pm, .cp-tb, .ci-tb и таблица на публичном сайте не затрагиваются). screen: при печати остаётся обычная таблица */
+@media screen and (max-width:700px){
+ .panel.tw:has(>table.tbc){padding:0!important;background:none;border:0;border-radius:0}
+ table.tb.tbc,table.tb.tbc tbody,table.tb.tbc tr,table.tb.tbc td,table.tb.tbc th{display:block;width:100%}
+ table.tb.tbc thead,table.tb.tbc tr.tbh{display:none}
+ table.tb.tbc td:empty{display:none}
+ table.tb.tbc tr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin:0 0 10px}
+ table.tb.tbc td,table.tb.tbc th{position:relative;border:0;padding:6px 0 6px 42%;min-height:32px;text-align:right;overflow-wrap:anywhere}
+ table.tb.tbc td[data-label]::before{content:attr(data-label);position:absolute;left:0;top:6px;width:38%;text-align:left;color:var(--mu);font-size:12px;font-weight:500;line-height:1.7}
+ table.tb.tbc td:not([data-label]){padding-left:0;text-align:left}
+ table.tb.tbc td:last-child:not([data-label]):not(:first-child){margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+ table.tb.tbc td select,table.tb.tbc td input:not([type=checkbox]):not([type=radio]){width:100%;min-width:0;min-height:44px;font-size:16px}
+ table.tb.tbc td input[type=checkbox]{width:26px;height:26px;margin:9px 0}
+ table.tb.tbc .ab{flex-wrap:wrap;gap:8px}
+ table.tb.tbc .ab button,table.tb.tbc .ab a,table.tb.tbc td .btn{min-width:44px;min-height:44px;justify-content:center}
+ table.tb.tbc td .btn{width:100%;margin-top:4px}
+
+ /* заявки: сверху крупно время и клиент, ниже услуга, телефон кнопкой, статус на всю ширину */
+ table.tb.tb-bk tr{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:baseline}
+ table.tb.tb-bk td{grid-column:1/-1;padding:4px 0;text-align:left}
+ table.tb.tb-bk td::before{display:none!important}
+ table.tb.tb-bk td[data-k=time]{order:1;grid-column:1;font:800 20px/1.25 'Exo 2',Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif;color:var(--gold);white-space:nowrap}
+ table.tb.tb-bk td[data-k=name]{order:2;grid-column:2;font-size:18px;font-weight:700;line-height:1.3}
+ table.tb.tb-bk td[data-k=name] br{display:none}
+ table.tb.tb-bk td[data-k=name] small{display:block;margin-top:2px;font-size:13px;font-weight:400;color:var(--mu)}
+ table.tb.tb-bk td[data-k=date]{order:3;font-size:13px;color:var(--mu)}
+ table.tb.tb-bk td[data-k=service_id],table.tb.tb-bk td[data-k=point_id],table.tb.tb-bk td[data-k=car]{padding-left:34%;text-align:right}
+ table.tb.tb-bk td[data-k=service_id]::before,table.tb.tb-bk td[data-k=point_id]::before,table.tb.tb-bk td[data-k=car]::before{display:block!important;width:32%}
+ table.tb.tb-bk td[data-k=service_id]{order:4}table.tb.tb-bk td[data-k=point_id]{order:5}table.tb.tb-bk td[data-k=car]{order:6}
+ table.tb.tb-bk td[data-k=phone]{order:7}
+ table.tb.tb-bk td[data-k=status]{order:8}
+ table.tb.tb-bk td:last-child:not([data-k]){order:9}
+ table.tb.tb-bk a[href^="tel:"]{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:6px 0 2px;border:1px solid var(--gold);border-radius:12px;color:var(--gold);font-size:16px;font-weight:700}
+ table.tb.tb-bk a[href^="tel:"]::before{content:"\260E"}
+ table.tb.tb-bk td select,table.tb.tb-bk td select.stl{width:100%;min-width:0;min-height:44px;font-size:16px}
+}
+
+/* v2.22-S5: выезд нижнего листа (окна админки .mod и этикеток .lbm) */
+@keyframes sheet{from{transform:translateY(100%)}}

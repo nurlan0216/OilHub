@@ -12,7 +12,8 @@ const ptSel=(id,v,u)=>(u.point_id&&u.role==='seller')?`<b>${esc(ptx((D.Pt||[]).f
 
 /* ===== касса ===== */
 const DR=Object.assign({cart:[],pay:'cash',disc:'',client:'',phone:'',plate:'',km:'',pt:'',promo:null,uuid:uid()},(()=>{try{return JSON.parse(ls.g('oh_staff_draft')||'{}')}catch(e){return{}}})());
-const keep=()=>ls.s('oh_staff_draft',JSON.stringify(DR)),QK='oh_staff_queue',queue=()=>{try{return JSON.parse(ls.g(QK)||'[]')}catch(e){return[]}};
+const keep=()=>ls.s('oh_staff_draft',JSON.stringify(DR)),QK='oh_staff_queue',queue=()=>{try{return JSON.parse(ls.g(QK)||'[]')}catch(e){return[]}},
+ qSave=a=>{ls.s(QK,JSON.stringify(a));document.dispatchEvent(new CustomEvent('oh:queue',{detail:{n:a.length}}))}; /* v2.22-S10: запись очереди сообщает шапке число неотправленных */
 const sub=()=>DR.cart.reduce((a,x)=>a+x.pr*x.q,0),dsc=()=>Math.min(Math.max(+DR.disc||0,0),sub());
 // v2.21-E4: промокод. Предпросмотр считается на клиенте по данным promo_check, итог всё равно пересчитывает сервер (sale_post)
 const pbase=()=>sub()-dsc(),pOn=()=>!!(DR.promo&&pbase()>0&&pbase()>=(+DR.promo.min||0)),
@@ -37,13 +38,30 @@ function relSug(){const inCart=new Set(DR.cart.filter(x=>x.k==='p').map(x=>x.id)
  DR.cart.forEach(x=>{if(x.k!=='p')return;const p=(D.P||[]).find(y=>y.id===x.id);if(!p||!p.related)return;
   String(p.related).split(';').map(s=>s.trim()).filter(Boolean).forEach(id=>{if(inCart.has(id)||seen.has(id)||RELX.has(id))return;const r=D.P.find(y=>y.id===id);if(!r||isOff(r)||!(+r.stock>0))return;seen.add(id);o.push(r)})});return o}
 function relBlock(){const L=relSug();return L.length?`<div class="rel"><b>${t('rel.title')}</b>${L.map(r=>`<div class="rel-r"><span class="cn">${esc(r.name)}<small> ${esc(r.sizes||'')} · ${t('pos.stock')}: ${fmtNum(+r.stock||0)}</small></span><span>${fmtMoney(+r.price||0)}</span><button class="btn gold" data-rel="${esc(r.id)}">${t('common.add')}</button><button class="x" data-rx="${esc(r.id)}" aria-label="${esc(t('common.close'))}">✕</button></div>`).join('')}</div>`:''}
+/* v2.22-S6: удаление строки чека с отменой на 4 секунды; смахивание влево по строке удаляет её */
+let UNDO=null;
+function undoClear(){if(UNDO){clearTimeout(UNDO.t);UNDO=null}const e=$('#pundo');if(e)e.remove()}
+function removeLine(i){const x=DR.cart[i];if(!x)return;undoClear();DR.cart.splice(i,1);keep();cartPaint();
+ const e=document.createElement('div');e.id='pundo';e.className='undo';e.setAttribute('role','status');
+ e.innerHTML=`<span>${esc(t('pos.removed'))}: ${esc(x.n)}</span><button type="button" class="btn ghost">${t('common.undo')}</button>`;document.body.appendChild(e);
+ const tm=setTimeout(undoClear,4000);UNDO={t:tm};
+ $('button',e).onclick=()=>{clearTimeout(tm);UNDO=null;e.remove();DR.cart.splice(Math.min(i,DR.cart.length),0,x);keep();cartPaint()}}
+function swipeInit(c){$$('.cl-c',c).forEach(r=>{let x0=0,y0=0,dx=0,on=false,id=null;
+ r.addEventListener('pointerdown',e=>{if(e.target.closest('input,select'))return;x0=e.clientX;y0=e.clientY;dx=0;on=false;id=e.pointerId});
+ r.addEventListener('pointermove',e=>{if(e.pointerId!==id)return;const mx=e.clientX-x0,my=e.clientY-y0;
+  if(!on){if(Math.abs(mx)>10&&Math.abs(mx)>Math.abs(my)*1.5){on=true;try{r.setPointerCapture(id)}catch(_){}r.classList.add('sw')}else return}
+  dx=Math.min(0,mx);r.style.transform='translateX('+dx+'px)'});
+ const end=e=>{if(e.pointerId!==id)return;id=null;if(!on)return;on=false;r.classList.remove('sw');
+  if(dx<-Math.min(110,r.offsetWidth*.3)){r.style.transform='translateX(-110%)';setTimeout(()=>removeLine(+r.dataset.row),120)}else r.style.transform=''};
+ r.addEventListener('pointerup',end);r.addEventListener('pointercancel',end)})}
 function cartPaint(){const c=$('#pc');if(!c)return;const u=c._u,pr=can(u,'edit_draft_sale'),n=queue().length;
- c.innerHTML=`${n?`<p class="note" style="border-color:var(--gold)">${t('pos.pending',{n})}. ${t('pos.pendingNote')}</p>`:''}<h3>${t('pos.cart')}</h3>`+(DR.cart.length?DR.cart.map((x,i)=>`<div class="cl"><span class="cn">${esc(x.n)}${x.code?` <small>${esc(x.code)}</small>`:''}</span>${x.k==='s'&&pr?`<input class="cp" data-pi="${i}" inputmode="decimal" value="${x.pr}" aria-label="${t('pos.price')}">`:`<span>${fmtMoney(x.pr)}</span>`}<span class="qt"><button data-d="-1" data-i="${i}" aria-label="−">−</button><b>${fmtNum(x.q)}</b><button data-d="1" data-i="${i}" ${x.code?'disabled':''} aria-label="+">+</button></span><b>${fmtMoney(x.pr*x.q)}</b><button class="x" data-rm="${i}" aria-label="${t('common.close')}">✕</button></div>`).join(''):`<p class="sub">${t('pos.empty')}</p>`)+
+ c.innerHTML=`${n?`<p class="note" style="border-color:var(--gold)">${t('pos.pending',{n})}. ${t('pos.pendingNote')}</p>`:''}<h3>${t('pos.cart')}</h3>`+(DR.cart.length?DR.cart.map((x,i)=>`<div class="cw"><div class="cw-bg" aria-hidden="true">🗑</div><div class="cl cl-c" data-row="${i}"><span class="cn">${esc(x.n)}${x.code?` <small>${esc(x.code)}</small>`:''}</span>${x.k==='s'&&pr?`<input class="cp pp" data-pi="${i}" inputmode="decimal" value="${x.pr}" aria-label="${t('pos.price')}">`:`<span class="pp">${fmtMoney(x.pr)}</span>`}<span class="qt"><button data-d="-1" data-i="${i}" aria-label="−">−</button><b>${fmtNum(x.q)}</b><button data-d="1" data-i="${i}" ${x.code?'disabled':''} aria-label="+">+</button></span><b class="sm">${fmtMoney(x.pr*x.q)}</b><button class="x" data-rm="${i}" aria-label="${t('common.close')}">✕</button></div></div>`).join(''):`<p class="sub">${t('pos.empty')}</p>`)+
  `${relBlock()}<div class="tt"><div>${t('pos.subtotal')}<b>${fmtMoney(sub())}</b></div>${can(u,'edit_draft_sale')?`<label>${t('pos.discount')}</label><input id="pdis" inputmode="decimal" value="${esc(DR.disc)}">`:''}${promoBox()}<div class="big">${t('pos.total')}<b>${fmtMoney(tot())}</b></div></div>
  <label>${t('pos.payment')}</label><div class="pay"><button class="btn ${DR.pay==='cash'?'gold':'ghost'}" data-pay="cash">${t('pos.cash')}</button><button class="btn ${DR.pay==='card'?'gold':'ghost'}" data-pay="card">${t('pos.card')}</button></div>
- <label>${t('pos.client')}</label><input id="pcl" value="${esc(DR.client)}" maxlength="120"><label>${t('remind.saleData')}</label><div class="fr2"><div><label>${t('pos.client.phone')}</label><input id="pph" type="tel" inputmode="tel" value="${esc(DR.phone)}" maxlength="25" autocomplete="off"></div><div><label>${t('pos.client.plate')}</label><input id="ppl" value="${esc(DR.plate)}" maxlength="15" autocomplete="off" style="text-transform:uppercase"></div></div><div class="fr2"><div><label>${t('remind.km')}</label><input id="pkm" inputmode="numeric" autocomplete="off" value="${esc(DR.km)}" maxlength="8"></div></div><small class="sub">${t('remind.saleHint')}</small>${chAllowed(u)?`<button class="btn ghost" id="phist" style="margin-top:10px">🕐 ${t('hist.open')}</button>`:''}<button class="btn gold bigb" id="psave" ${DR.cart.length?'':'disabled'}>${t('common.save')}</button>`;
- $$('[data-d]',c).forEach(b=>b.onclick=()=>{const x=DR.cart[+b.dataset.i];x.q+=+b.dataset.d;if(x.q<=0)DR.cart.splice(+b.dataset.i,1);else if(x.k==='p'){const p=D.P.find(y=>y.id===x.id);if(p&&DR.cart.filter(y=>y.id===x.id).reduce((a,y)=>a+y.q,0)>(+p.stock||0)){x.q--;say(t('err.stock'))}}keep();cartPaint()});
- $$('[data-rm]',c).forEach(b=>b.onclick=()=>{DR.cart.splice(+b.dataset.rm,1);keep();cartPaint()});
+ <label>${t('pos.client')}</label><input id="pcl" value="${esc(DR.client)}" maxlength="120"><label>${t('remind.saleData')}</label><div class="fr2"><div><label>${t('pos.client.phone')}</label><input id="pph" type="tel" inputmode="tel" value="${esc(DR.phone)}" maxlength="25" autocomplete="off"></div><div><label>${t('pos.client.plate')}</label><input id="ppl" value="${esc(DR.plate)}" maxlength="15" autocomplete="off" style="text-transform:uppercase"></div></div><div class="fr2"><div><label>${t('remind.km')}</label><input id="pkm" inputmode="numeric" autocomplete="off" value="${esc(DR.km)}" maxlength="8"></div></div><small class="sub">${t('remind.saleHint')}</small>${chAllowed(u)?`<button class="btn ghost" id="phist" style="margin-top:10px">🕐 ${t('hist.open')}</button>`:''}<div class="pos-bar"><div class="pb-t"><small>${t('pos.total')}</small><b>${fmtMoney(tot())}</b></div><button class="btn gold bigb" id="psave" ${DR.cart.length?'':'disabled'}>${t('pos.pay')}</button></div>`;
+ $$('[data-d]',c).forEach(b=>b.onclick=()=>{const x=DR.cart[+b.dataset.i];x.q+=+b.dataset.d;if(x.q<=0){x.q=1;return removeLine(+b.dataset.i)}if(x.k==='p'){const p=D.P.find(y=>y.id===x.id);if(p&&DR.cart.filter(y=>y.id===x.id).reduce((a,y)=>a+y.q,0)>(+p.stock||0)){x.q--;say(t('err.stock'))}}keep();cartPaint()});
+ $$('[data-rm]',c).forEach(b=>b.onclick=()=>removeLine(+b.dataset.rm));
+ swipeInit(c);
  $$('[data-rel]',c).forEach(b=>b.onclick=()=>{const m=addP(D.P.find(y=>y.id===b.dataset.rel));if(m&&m[0]!=='✓')say(m)});
  $$('[data-rx]',c).forEach(b=>b.onclick=()=>{RELX.add(b.dataset.rx);cartPaint()});
  $$('[data-pi]',c).forEach(i=>i.onchange=()=>{const v=parseFloat(String(i.value).replace(',','.'));if(v>=0)DR.cart[+i.dataset.pi].pr=v;keep();cartPaint()});
@@ -57,15 +75,18 @@ async function sell(){if(!DR.cart.length)return;const b=$('#psave');
   body={action:'sale_post',uuid:DR.uuid,point_id:DR.pt,discount:dsc(),promo:pc||undefined,pay:DR.pay,client:DR.client,phone:wa.value,plate:DR.plate,mileage:String(DR.km).replace(/\s/g,''),items:DR.cart.map(x=>({kind:x.k==='s'?'service':'product',id:x.id,qty:x.q,code:x.code||undefined,price:x.k==='s'?x.pr:undefined}))};
  try{const r=await post({...body,token:tk()});if(r.error==='auth')return location.reload();if(!r.ok){b.disabled=false;if(/^ERR_PROMO/.test(r.error||'')){DR.promo=null;keep();cartPaint()}if(r.error==='ERR_SHIFT')shiftBanner();return say(em(r.error))}
   snap.id=r.id;snap.total=r.total;if(r.discount!=null&&r.promo){snap.pd=Math.max(0,r.discount-snap.disc);snap.promo=r.promo}resetDraft();cartPaint();say(t('sale.saved'));load(true).catch(()=>{});showReceipt(snap)}
- catch(e){const q=queue();q.push({body,snap});ls.s(QK,JSON.stringify(q));resetDraft();say(t('net.offline'));cartPaint()}}
-function resetDraft(){RELX.clear();Object.assign(DR,{cart:[],disc:'',client:'',phone:'',plate:'',km:'',promo:null,uuid:uid()});keep()}
+ catch(e){const q=queue();q.push({body,snap});qSave(q);resetDraft();say(t('net.offline'));cartPaint()}}
+function resetDraft(){undoClear();RELX.clear();Object.assign(DR,{cart:[],disc:'',client:'',phone:'',plate:'',km:'',promo:null,uuid:uid()});keep()}
 // H2: продажа, отклонённая с ERR_SHIFT, остаётся в очереди с пометкой hold и не отправляется повторно, пока не откроют смену (проверка один раз за запуск flush, без цикла)
-async function flush(){const q=queue();if(!q.length||!navigator.onLine)return;
+let FLN=0; /* v2.22-S10: один flush за раз (кнопка в шапке, таймер и событие online могут совпасть) */
+async function flush(){if(FLN)return;FLN=1;try{await flushRun()}finally{FLN=0}}
+async function flushRun(){const q=queue();if(!q.length||!navigator.onLine)return;
  if(q.some(j=>j.hold)){const s=await post({action:'shift_current',token:tk()}).catch(()=>null);if(s&&s.ok&&(s.shift||!s.required||s.off))q.forEach(j=>{delete j.hold})}
  const rest=[];let held=0;
  for(const j of q){if(j.hold){rest.push(j);held++;continue}try{let r=await post({...j.body,token:tk()});if(!r.ok&&/^ERR_PROMO/.test(r.error||'')&&j.body.promo){const b2={...j.body};delete b2.promo;r=await post({...b2,token:tk()});say(t('promo.dropped'))}if(r.error==='auth'||(!r.ok&&!r.error)){rest.push(j);continue}if(!r.ok&&r.error==='ERR_SHIFT'){j.hold=1;rest.push(j);held++;continue}if(!r.ok)say(em(r.error))}catch(e){rest.push(j)}}
- ls.s(QK,JSON.stringify(rest));if(rest.length<q.length){load(true).catch(()=>{});say(t('sale.saved'))}if(held){say(t('err.shift')+'. '+t('shift.held',{n:held}));shiftBanner()}cartPaint()}
-addEventListener('online',flush);
+ qSave(rest);if(rest.length<q.length){load(true).catch(()=>{});say(t('sale.saved'))}if(held){say(t('err.shift')+'. '+t('shift.held',{n:held}));shiftBanner()}cartPaint()}
+addEventListener('online',flush);document.addEventListener('oh:flush',()=>{flush()});
+setInterval(()=>{if(tk()&&queue().some(j=>!j.hold)&&navigator.onLine!==false)flush()},30000); /* повтор, если сеть есть, а сервер не отвечал */
 function rText(s){const pn=ptx((D.Pt||[]).find(x=>x.id===s.pt),'name'),o=['OilHub'+(pn?' · '+pn:''),fmtDateTime(new Date()),t('pos.receipt')+' № '+s.id,''];
  s.cart.forEach(x=>o.push(x.n+' × '+fmtNum(x.q)+' = '+fmtMoney(x.pr*x.q)));if(s.disc)o.push(t('pos.discount')+': −'+fmtMoney(s.disc));if(s.promo&&s.pd)o.push(t('promo.rcp',{code:s.promo})+': −'+fmtMoney(s.pd));if(s.cl)o.push('',s.cl);o.push('',t('pos.total')+': '+fmtMoney(s.total),t('pos.payment')+': '+t(s.pay==='card'?'pos.card':'pos.cash'));return o.join('\n')}
 function showReceipt(s){const d=document.createElement('div');d.className='stm rcp';const tx_=rText(s);
@@ -73,11 +94,11 @@ function showReceipt(s){const d=document.createElement('div');d.className='stm r
  document.body.appendChild(d);$('[data-x]',d).onclick=()=>d.remove();$('[data-pr]',d).onclick=()=>window.print()}
 async function posInit(u){const el=$('#pos');if(!el)return;try{await load()}catch(e){el.innerHTML=errBox(e);return}
  if(!DR.pt)DR.pt=u.point_id||'';
- el.innerHTML=`<div class="pos-top"><input id="pq" type="search" placeholder="${esc(t('pos.search'))}" aria-label="${esc(t('common.search'))}" autocomplete="off"><button class="btn gold" id="psc">📷 ${t('pos.scan')}</button><button class="btn ghost" id="poil">🛢 ${t('selector.title')}</button></div>
+ el.innerHTML=`<div class="pos-top"><input id="pq" type="search" placeholder="${esc(t('pos.search'))}" aria-label="${esc(t('common.search'))}" autocomplete="off"><button class="btn gold" id="psc" aria-label="${esc(t('pos.scan'))}"><span aria-hidden="true">📷</span><span class="pl"> ${t('pos.scan')}</span></button><button class="btn ghost" id="poil" aria-label="${esc(t('selector.title'))}"><span aria-hidden="true">🛢</span><span class="pl"> ${t('selector.title')}</span></button></div>
   <div class="pos-pt">${t('pos.point')}: ${ptSel('ppt',DR.pt,u)}</div><div id="pr"></div>
   <h3 class="h3">${t('pos.services')}</h3><div class="chips">${D.S.filter(s=>!isOff(s)).map(s=>`<button class="btn ghost" data-s="${esc(s.id)}">${esc(tx(s,'name'))} · ${fmtMoney(+s.price||0)}</button>`).join('')}</div>
   <div class="panel" id="pc"></div>`;
- {const pcEl=$('#pc');if(!pcEl)return;pcEl._u=u}cartPaint();flush();shiftBanner(u);
+ {const pcEl=$('#pc');if(!pcEl)return;pcEl._u=u}{const sh=$('.sh');if(sh)document.documentElement.style.setProperty('--shh',sh.offsetHeight+'px')}cartPaint();flush();shiftBanner(u);
  if($('#ppt'))$('#ppt').onchange=e=>{DR.pt=e.target.value;keep()};
  $$('[data-s]',el).forEach(b=>b.onclick=()=>addS(D.S.find(s=>s.id===b.dataset.s)));
  $('#pq').oninput=e=>{const q=norm(e.target.value);$('#pr').innerHTML=q?D.P.filter(p=>!isOff(p)&&norm([p.name,p.sku,p.barcode,p.sae].join(' ')).includes(q)).slice(0,8).map(p=>`<button class="row" data-p="${esc(p.id)}"><span>${esc(p.name)}<small>${esc(p.sku||'')} ${esc(p.sizes||'')}</small></span><b>${fmtMoney(+p.price||0)}</b><i>${t('pos.stock')}: ${fmtNum(+p.stock||0)}</i></button>`).join(''):'';
@@ -130,8 +151,9 @@ async function prodInit(){const el=$('#pv');if(!el)return;try{await load()}catch
 
 /* ===== записи ===== */
 async function bkInit(u){const el=$('#bk');if(!el)return;try{await load();const B=(await lst('Bookings')).sort((a,b)=>(a.date+a.time)<(b.date+b.time)?1:-1);
- el.innerHTML=`<div class="panel tw"><table class="tb"><tr><th>${t('common.date')}</th><th>${t('common.client')}</th><th>${t('common.service')}</th><th>${t('common.status')}</th></tr>${B.slice(0,100).map(b=>`<tr><td>${fmtDate(b.date)}<br>${fmtTime(b.time)}</td><td>${esc(b.name)}<br><a href="tel:${esc(b.phone)}">${esc(b.phone)}</a><br><small>${esc([b.brand,b.model,b.plate].filter(Boolean).join(' '))}</small></td><td>${esc(tx(D.S.find(s=>s.id===b.service_id)||{},'name'))}</td><td><select data-st="${esc(b.id)}">${['new','confirmed','work','done','cancel'].map(k=>`<option value="${k}" ${b.status===k?'selected':''}>${t('st.'+k)}</option>`).join('')}</select></td></tr>`).join('')||`<tr><td colspan="4">${t('common.empty')}</td></tr>`}</table></div>`;
- $$('[data-st]',el).forEach(s=>s.onchange=async()=>{const r=await post({action:'upsert',sheet:'Bookings',row:{id:s.dataset.st,status:s.value},token:tk()});say(r.error?em(r.error):t('common.save')+' ✓')})}catch(e){el.innerHTML=errBox(e)}}
+ const nwN=()=>B.filter(b=>b.status==='new').length;ohBadge('bookings',nwN());
+ el.innerHTML=`<div class="panel tw"><table class="tb tb-bk"><tr><th>${t('common.date')}</th><th>${t('common.client')}</th><th>${t('common.service')}</th><th>${t('common.status')}</th></tr>${B.slice(0,100).map(b=>`<tr><td data-k="time">${fmtDate(b.date)}<br>${fmtTime(b.time)}</td><td data-k="name">${esc(b.name)}<br><a href="tel:${esc(b.phone)}">${esc(b.phone)}</a><br><small>${esc([b.brand,b.model,b.plate].filter(Boolean).join(' '))}</small></td><td data-k="service_id">${esc(tx(D.S.find(s=>s.id===b.service_id)||{},'name'))}</td><td data-k="status"><select data-st="${esc(b.id)}">${['new','confirmed','work','done','cancel'].map(k=>`<option value="${k}" ${b.status===k?'selected':''}>${t('st.'+k)}</option>`).join('')}</select></td></tr>`).join('')||`<tr><td colspan="4">${t('common.empty')}</td></tr>`}</table></div>`;
+ $$('[data-st]',el).forEach(s=>s.onchange=async()=>{const r=await post({action:'upsert',sheet:'Bookings',row:{id:s.dataset.st,status:s.value},token:tk()});if(!r.error){const x=B.find(q=>q.id===s.dataset.st);if(x)x.status=s.value;ohBadge('bookings',nwN())}say(r.error?em(r.error):t('common.save')+' ✓')})}catch(e){el.innerHTML=errBox(e)}}
 
 /* ===== мои продажи ===== */
 async function msInit(u){const el=$('#ms');if(!el)return;try{const S=(await lst('Sales')).filter(s=>s.staff_id===u.id&&s.total!=null&&s.total!=='').sort((a,b)=>b.id<a.id?-1:1);
@@ -179,6 +201,8 @@ async function rcInit(u){const el=$('#rc');if(!el)return;try{await load()}catch(
   say(t('rc.done'));Object.assign(RC,{pid:'',cost:'',lines:[],uuid:uid(),inv:''});load(true).catch(()=>{});rcInit(u)}}
 
 const STAFF_CFG={app:'staff',allowed:['seller','manager','admin'],other:{url:'./admin.html',key:'gate.goAdmin'},def:'pos',
+ net:{queue:()=>queue().length}, /* v2.22-S10: индикатор «Нет сети» и число неотправленных в шапке */
+ tabs:[['pos','nav.pos','🧾'],['shift','nav.shift','⏱'],['products','nav.products','🛢'],['bookings','nav.bookings','📅']], /* v2.22-S6: нижняя панель вкладок на телефоне */
  routes:{pos:{k:'nav.pos'},shift:{k:'nav.shift',perm:'sell'},products:{k:'nav.products'},bookings:{k:'nav.bookings'},'my-sales':{k:'nav.mySales'},clients:{k:'nav.clients',perm:['manage_bookings','sell','view_reports']},remind:{k:'nav.remind',perm:['manage_bookings','view_reports']},receipt:{k:'pos.income',perm:'create_receipt'},inventory:{k:'nav.inventory',perm:'edit_stock'}},
  nav:[['pos','nav.pos'],['shift','nav.shift'],['products','nav.products'],['bookings','nav.bookings'],['my-sales','nav.mySales'],['clients','nav.clients'],['remind','nav.remind'],['receipt','pos.income'],['inventory','nav.inventory']],
  views:{pos:(c,u)=>{queueMicrotask(()=>posInit(u));return `<div id="pos">${sk}</div>`},

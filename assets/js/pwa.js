@@ -99,8 +99,24 @@
       show('ios',null,[closeBtn()],iosSteps());
     }
   }
-  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;maybeInstall()});
-  window.addEventListener('appinstalled',function(){deferred=null;remember();hide()});
+  /* v2.22-S10: постоянная кнопка «Установить приложение» ([data-pwa-install] в шторке меню), не зависит от закрытого баннера */
+  function canInstall(){return !standalone()&&(!!deferred||isIosSafari())}
+  function paintInstall(){
+    var on=canInstall(),l=document.querySelectorAll('[data-pwa-install]');
+    for(var i=0;i<l.length;i++){l[i].hidden=!on;l[i].textContent=tt('pwa.install')}
+  }
+  function installNow(){
+    var x=document.querySelector('#dr .sh-x,#dr .dr-x');if(x)try{x.click()}catch(e){} /* закрыть шторку, чтобы баннер был виден */
+    if(deferred){
+      var p=deferred;deferred=null;hide();paintInstall();
+      try{p.prompt();p.userChoice.then(function(c){if(c&&c.outcome==='dismissed')remember()}).catch(function(){})}catch(e){}
+      return;
+    }
+    if(isIosSafari()){render=installNow;show('ios',null,[closeBtn()],iosSteps());try{window.scrollTo(0,0)}catch(e){}}
+  }
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-pwa-install]');if(b){e.preventDefault();installNow()}});
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;maybeInstall();paintInstall()});
+  window.addEventListener('appinstalled',function(){deferred=null;remember();hide();paintInstall()});
 
   /* обновление */
   function showUpdate(worker){
@@ -112,6 +128,15 @@
       }),
       btn(tt('pwa.later'),false,hide)]);
   }
+  /* v2.22-S10: ищем новую версию при возврате в приложение (не чаще раза в 30 минут) и при появлении сети */
+  var lastCheck=Date.now();
+  function checkUpdate(force){
+    if(!reg||navigator.onLine===false)return;
+    if(!force&&Date.now()-lastCheck<30*60*1000)return;
+    lastCheck=Date.now();try{reg.update().catch(function(){})}catch(e){}
+  }
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkUpdate(false)});
+  window.addEventListener('online',function(){checkUpdate(false)});
   /* страницу перезагружает только нажатие «Обновить»; первая установка service worker страницу не трогает */
   if('serviceWorker' in navigator&&location.protocol!=='file:'){
     hadController=!!navigator.serviceWorker.controller;
@@ -128,10 +153,10 @@
           w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller)showUpdate(w)});
         });
       }).catch(function(e){console.warn('SW:',e&&e.message)});
-      setTimeout(maybeInstall,800); /* подсказка не зависит от успеха регистрации */
+      setTimeout(function(){maybeInstall();paintInstall()},800); /* подсказка не зависит от успеха регистрации */
     });
-  }else{window.addEventListener('load',function(){setTimeout(maybeInstall,800)})}
-  document.addEventListener('langchange',function(){if(render)render()});
+  }else{window.addEventListener('load',function(){setTimeout(function(){maybeInstall();paintInstall()},800)})}
+  document.addEventListener('langchange',function(){if(render)render();paintInstall()});
 
   /* нет сети: понятное сообщение, данные не теряются молча */
   window.addEventListener('oh:nonet',function(){
@@ -142,5 +167,5 @@
     document.body.insertBefore(d,document.body.firstChild);
     setTimeout(function(){if(d.parentNode)d.remove()},10000);
   });
-  window.OH_PWA={isIosSafari:isIosSafari,standalone:standalone,dismissed:dismissed,dirty:dirty};
+  window.OH_PWA={isIosSafari:isIosSafari,standalone:standalone,dismissed:dismissed,dirty:dirty,canInstall:canInstall,install:installNow,paint:paintInstall,check:checkUpdate};
 })();

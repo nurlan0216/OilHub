@@ -145,3 +145,34 @@
  body.qr-printing .qr-f small{font-size:9pt}
  body.qr-printing .qr-s{font-size:12pt}
 }
+
+/* v2.22-S5: окна как нижние листы на телефоне */
+.mact{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+@media(max-width:560px){
+ .mod{place-items:end stretch;padding:0;animation:fi .2s}
+ .mod>form,.mod>form.wide{max-width:none;width:100%;border-radius:22px 22px 0 0;border-width:1px 0 0;padding:18px 16px 0;max-height:92vh;max-height:92dvh;overscroll-behavior:contain;animation:sheet .28s ease-out}
+ .mod input:not([type=checkbox]):not([type=radio]):not([type=file]),.mod select{font-size:16px;min-height:44px}
+ .mod textarea{font-size:16px}
+ .mod .ck{min-height:44px;display:flex;align-items:center}
+ .mact{position:sticky;bottom:0;z-index:2;margin:16px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line)}
+ .mact .btn{flex:1;min-height:48px;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){.mod>form{animation:none}}
+
+/* v2.22-S8: фото в форме: предпросмотр и кнопка выбора */
+.imgp{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.imgt{position:relative;margin:0;width:88px;height:88px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.imgt img{width:100%;height:100%;object-fit:contain;display:block}
+.imgt.up img{opacity:.45}.imgt.def{width:auto;max-width:180px;padding-right:8px;display:flex;align-items:center;gap:8px;background:transparent}.imgt.def img{width:88px;opacity:.7}.imgt.def figcaption{font-size:12px;color:var(--mut,#8a9099)}
+.imgx{position:absolute;top:0;right:0;width:44px;height:44px;border:0;background:radial-gradient(circle at calc(100% - 17px) 17px,rgba(0,0,0,.7) 12px,transparent 13px);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:flex-start;justify-content:flex-end;padding:5px 7px}
+.imgr{display:flex;gap:8px;align-items:stretch}.imgr input[type=text],.imgr>input{flex:1;min-width:0}
+.imgb{margin:0;min-height:44px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+.imgf.busy .imgb{opacity:.5;pointer-events:none}
+@media(max-width:560px){.imgr{flex-direction:column}.imgb{min-height:48px}.imgt{width:80px;height:80px}}
+
+/* v2.22-S9: импорт товаров из CSV */
+.pi-a{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.pi-a .btn{min-height:44px}
+.pi-l{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.pi-r{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;overflow-wrap:anywhere}.pi-r.pi-err{border-color:#d9534f}.pi-r.pi-upd{border-color:#4cc38a55}
+.pi-c span{color:var(--mu);font-size:12px;margin-right:4px}.pi-e{color:#e5726e}.pi-w{color:var(--gold)}
+@media(max-width:560px){.pi-a .btn{flex:1 1 100%;justify-content:center}}

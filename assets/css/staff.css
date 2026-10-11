@@ -29,3 +29,32 @@
 .rel-r{display:flex;align-items:center;gap:10px}.rel-r .cn{flex:1;min-width:0}.rel-r small{color:var(--mu)}.rel-r .btn{min-height:44px;padding:8px 16px}.rel-r .x{min-width:44px;min-height:44px}
 /* v2.21-E7: инвентаризация в кассе (те же классы, что в админке) */
 .sa-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.sa-h h1{font-size:30px}.sa small{color:var(--mu)}.tb tr.blk td{opacity:.55}
+
+/* v2.22-S6: касса для одной руки (≤560px). Поиск и сканер сверху, итог и «Оплатить» закреплены над панелью вкладок */
+.cw-bg{display:none}.pos-bar .bigb{margin-top:18px}.pb-t{display:none}
+@media(max-width:560px){
+ #pos{padding-bottom:96px}
+ .pos-top{flex-wrap:nowrap;gap:8px;position:sticky;top:var(--shh,64px);z-index:5;background:var(--bg);padding:8px 0;margin:-8px 0 4px}
+ .pos-top input{min-width:0;min-height:48px;font-size:16px}
+ .pos-top .btn{min-width:48px;min-height:48px;padding:0 12px;justify-content:center}.pl{display:none}
+ .pos-pt select{min-height:44px;font-size:16px}
+ .chips .btn{min-height:44px}
+ #pc{padding:14px 12px}
+ .cw{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+ .cw-bg{display:flex;position:absolute;inset:0;align-items:center;justify-content:flex-end;padding-right:22px;background:#d9534f;font-size:22px}
+ .cl.cl-c{position:relative;background:var(--card);touch-action:pan-y;border-bottom:0;transition:transform .15s;grid-template-columns:auto 1fr auto;grid-template-areas:"n n x" "q p s";gap:6px 10px;padding:10px 0}
+ .cl-c.sw{transition:none}
+ .cl-c .cn{grid-area:n;min-width:0;overflow-wrap:anywhere}.cl-c .x{grid-area:x}.cl-c .qt{grid-area:q}.cl-c .pp{grid-area:p;text-align:right;color:var(--mu)}.cl-c .sm{grid-area:s;text-align:right;font-size:17px}
+ .cl-c .cp{width:100%;min-height:44px;font-size:16px;text-align:right}
+ .qt{gap:6px}.qt b{min-width:28px;text-align:center}
+ #pc input,#pc select{font-size:16px;min-height:44px}
+ .pay .btn{min-height:48px}
+ .pos-bar{position:fixed;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:55;display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--bg2);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.35)}
+ .pb-t{display:grid;line-height:1.15}.pb-t small{color:var(--mu);font-size:12px}.pb-t b{font-size:22px;white-space:nowrap}
+ .pos-bar .bigb{margin:0;flex:1;width:auto;min-height:56px}
+ #stt.toast{bottom:calc(56px + 88px + env(safe-area-inset-bottom,0px))}
+}
+/* отмена удаления строки */
+.undo{position:fixed;left:12px;right:12px;bottom:20px;z-index:98;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--gold);border-radius:14px;padding:8px 8px 8px 16px;box-shadow:var(--sh);max-width:460px;margin:0 auto}
+.undo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.undo .btn{min-height:44px;padding:8px 16px;flex:none}
+@media(max-width:560px){.undo{bottom:calc(56px + 88px + env(safe-area-inset-bottom,0px))}}

@@ -104,17 +104,13 @@ footer{border-top:1px solid var(--line);padding:30px 0 90px;color:var(--mu);font
 .prog svg{width:100%;height:100%;transform:rotate(-90deg)}.prog circle{fill:var(--card);stroke:var(--line);stroke-width:3}
 .prog .p{fill:none;stroke:var(--gold);stroke-dasharray:151;stroke-dashoffset:151}
 .prog span{position:absolute;inset:0;display:grid;place-items:center;font-size:18px;color:var(--gold)}
-.wa{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:60;display:none;gap:8px;padding:14px 20px;border-radius:99px;background:#25d366;color:#08210f;font-weight:700;box-shadow:var(--sh)}
 @media(max-width:900px){
  .menu,.nav>.btn{display:none}.burger{display:block}
- .menu.o{display:flex;flex-direction:column;position:fixed;inset:68px 0 auto;background:var(--bg);padding:20px;gap:6px;border-bottom:1px solid var(--line);animation:up2 .3s}
- .menu.o a{padding:14px 0;font-size:18px}
- @keyframes up2{from{opacity:0;transform:translateY(-10px)}}
- .hg,.two,.brand,.g3{grid-template-columns:1fr}.chip{display:none}section{padding:64px 0}.wa{display:flex}.btn{padding:15px 22px}
+ .hg,.two,.brand,.g3{grid-template-columns:1fr}.chip{display:none}section{padding:64px 0}.btn{padding:15px 22px}
 }
 
 .menu a{white-space:nowrap}.nav{gap:14px}.nav>.btn{padding:11px 20px;white-space:nowrap;font-size:14px}.hero h1{font-size:clamp(38px,5.4vw,72px)}
-@media(max-width:1100px){.menu,.nav>.btn{display:none}.burger{display:block}.menu.o{display:flex;flex-direction:column;position:fixed;inset:68px 0 auto;background:var(--bg);padding:20px;gap:6px;border-bottom:1px solid var(--line);animation:up2 .3s}.menu.o a{padding:14px 0;font-size:18px}}
+@media(max-width:1100px){.menu,.nav>.btn{display:none}.burger{display:block}}
 .crumb{font-size:13px;color:var(--mu);margin-bottom:14px}.crumb a:hover{color:var(--gold)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}.grid .pc{flex:none}
 .pc a.in{display:block}.pc .nm{font:700 17px/1.25 Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif;margin:4px 0 12px;display:block}
@@ -157,3 +153,112 @@ footer{border-top:1px solid var(--line);padding:30px 0 90px;color:var(--mu);font
 .pc .can{padding:34px 12px 8px}.pc .can img{max-height:100%}
 .pd .can{padding:40px 14px 14px}.pd .can img{max-height:330px;max-width:90%}
 .rs .can{padding:0}.rs .can img{max-height:80px}
+
+/* v2.22-S7: публичный сайт на телефоне. Нижняя панель и шторка меню (до 900 и 1100px), каталог по 2 карточки, фото товара листается, подбор по шагам (до 700px) */
+body.dr-lock{overflow:hidden}
+.dbk,.dr,.mb{display:none}
+@media(max-width:1100px){
+ .dbk{display:block;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+ .dbk.on{opacity:1;pointer-events:auto}
+ .dr{display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:85;width:min(310px,86vw);overflow-y:auto;overscroll-behavior:contain;background:var(--bg2);border-right:1px solid var(--line);box-shadow:var(--sh);transform:translateX(-102%);visibility:hidden;transition:transform .28s cubic-bezier(.6,0,.2,1),visibility 0s .28s;padding-left:env(safe-area-inset-left,0px)}
+ .dr.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.6,0,.2,1),visibility 0s}
+ .dr-h{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);padding:calc(14px + env(safe-area-inset-top,0px)) 14px 12px 18px;border-bottom:1px solid var(--line)}
+ .dr-h .logo{margin-right:0}
+ .dr-x{width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:18px}
+ .dr-n{display:flex;flex-direction:column;gap:2px;padding:10px}
+ .dr-n a{display:flex;align-items:center;min-height:52px;padding:12px 14px;border-radius:12px;font-size:17px;font-weight:500;color:var(--mu)}
+ .dr-n a:hover{color:var(--tx)}.dr-n a.on{background:var(--gold);color:#16181b;font-weight:700}
+ .dr-f{display:grid;gap:10px;margin-top:auto;position:sticky;bottom:0;background:var(--bg2);padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+ .dr-f .btn{justify-content:center;min-height:48px}
+}
+@media(max-width:900px){
+ .mb:not([hidden]){display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:55;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+ body.has-mb{padding-bottom:var(--mbh,72px)}
+ body.has-mb .toast{bottom:calc(var(--mbh,72px) + 14px)}
+ .prog{display:none}
+ .mb-i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;padding:6px 4px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--tx);font-size:12px;font-weight:700;line-height:1.1;text-align:center}
+ .mb-i svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+ .mb-bk{flex:1.25;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#16181b;border-color:transparent}
+ .mb-wa{background:#25d366;color:#08210f;border-color:transparent}
+ .mb-p{flex-direction:column;gap:8px}
+ .mb-pr{display:flex;align-items:baseline;gap:8px;min-height:24px}
+ .mb-pr b{font:italic 800 22px/1.1 'Exo 2',Manrope,Roboto,'Segoe UI',system-ui,Arial,sans-serif}
+ .mb-pr s,.mb-pr span{color:var(--mu);font-size:13px}
+ .mb-bt{display:flex;gap:8px}
+ .mb-bt .btn{flex:1;justify-content:center;min-height:48px;padding:8px 10px;font-size:14px;line-height:1.15;text-align:center}
+ .mb-bt .btn.ghost{background:var(--card)}
+ /* страница товара: фото на всю ширину, кнопки уехали в нижнюю панель */
+ .pd .can.gl{height:min(82vw,380px);margin:0 -20px;border-radius:0;border-width:1px 0}
+ body.has-mb .pd .cta,body.has-mb .pd .pdp{display:none}/* кнопки и цена уже в нижней панели */
+}
+/* фото товара: горизонтальная лента со scroll-snap (одно фото — просто картинка) */
+.pd .can.gl{display:block;padding:0;position:relative}
+.gt{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.gt::-webkit-scrollbar{display:none}
+.gs{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;padding:36px 14px 40px;min-width:0}
+.pd .can.gl img{max-height:100%;max-width:92%}
+.gd{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center}
+.gd button{width:44px;height:36px;border:0;background:none;position:relative}
+.gd button::before{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:99px;background:var(--steel);opacity:.5;transition:.25s}
+.gd button.on::before{background:var(--gold);opacity:1;width:22px;margin-left:-11px}
+/* каталог: поиск и категории (.cf-top). На компьютере раскладка прежняя: категории, ниже поиск и два списка */
+.cf{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 26px}
+.cf-top{display:contents}
+.cf .cats{order:0;width:100%;margin:0 0 4px}
+.cf #fq{order:1;flex:1 1 260px;width:auto;min-width:150px}
+.cf-o{order:2;display:flex;gap:12px;flex:1 1 320px}
+.cf-o select{flex:1;width:auto;min-width:140px}
+@media(max-width:700px){
+ .cf{display:contents}/* без своего блока: закреплённая .cf-top держится на всю страницу, а не только на высоту фильтров */
+ .cf-top{display:block;position:sticky;top:68px;z-index:40;margin:0 -20px;padding:8px 20px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
+ .cf #fq{width:100%;min-height:48px;font-size:16px;margin-bottom:8px}
+ .cats-rail{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px;gap:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+ .cats-rail::-webkit-scrollbar{display:none}
+ .cats-rail button{flex:0 0 auto;min-height:44px;padding:8px 18px;white-space:nowrap}
+ .cf-o{margin:12px 0 16px;gap:10px}
+ .cf-o select{min-height:48px;font-size:16px;padding:13px 6px 13px 12px;text-overflow:ellipsis}
+ /* две карточки в ряд */
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .grid .pc{padding:10px;border-radius:18px}
+ .pc .can{height:140px;margin-bottom:10px;padding:30px 8px 6px}
+ .pc .can svg{height:104px}
+ .pc .sae{font-size:15px;right:8px;top:6px}
+ .pc .bdg{left:6px;top:6px;font-size:10px;padding:1px 7px}
+ .pc .nm{font-size:14px;margin:2px 0 8px}
+ .pc small{display:block;font-size:11px;line-height:1.35;margin-bottom:2px}
+ .cf #fq::placeholder{font-size:14px}
+ .tags{gap:4px;margin-bottom:10px}.tags span{font-size:11px;padding:1px 7px}
+ .pc .row{flex-direction:column;align-items:flex-start;gap:2px}
+ .pc .pr{font-size:17px}
+ .pc .row a{display:inline-flex;align-items:center;min-height:44px}
+ /* подбор масла по шагам */
+ #sp.panel{padding:18px;border-radius:20px}
+ .tabs button{min-height:44px}
+ #sp .cats button{min-height:44px}
+ #sp select{min-height:48px;font-size:16px}
+ .wz .steps{margin-bottom:16px}
+ .wz .q{font-size:22px;margin-bottom:12px}
+ .wz-ch{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+ .wz-c{min-height:44px;margin:0;padding:8px 14px;font-size:14px}
+ .wz-q{min-height:48px;margin-bottom:10px;font-size:16px}
+ .wz .opts{grid-template-columns:1fr 1fr;gap:10px;min-height:0}
+ .wz .opts.wz-1{grid-template-columns:1fr}
+ .wz .opts button{display:flex;align-items:center;min-height:56px;padding:12px;font-size:16px;overflow-wrap:anywhere}
+ .wz .opts button:hover{transform:none}
+ .wz-bk{width:100%;justify-content:center;min-height:48px;margin-top:14px}
+}
+@media(max-width:359px){.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.dr,.dbk{transition:none}}
+/* шапка на узких телефонах: кнопка ☰ не сжимается, остальное уплотняется */
+.burger{flex:none}
+@media(max-width:420px){
+ .nav{gap:8px}
+ .logo{font-size:22px;gap:6px}.logo svg{width:18px}
+ .nav .pill button{padding:5px 9px}
+ #th.pill{padding:8px 10px!important}
+}
+/* подвал не должен «выпрыгивать» в экран, пока страница ещё не отрисована (сдвиг макета, CLS) */
+#app{min-height:100svh}
+
+/* v2.22-S10: кнопка установки в шторке сайта */
+.dr-f [data-pwa-install]{min-height:48px;justify-content:center}.dr-f [data-pwa-install][hidden]{display:none!important}
